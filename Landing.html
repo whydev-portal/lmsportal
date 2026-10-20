@@ -1,0 +1,779 @@
+<!-- ============================================================ -->
+<!-- FILE: Landing.html (REVISI SPASI ICON, TITLE & SOCIAL PROOF)  -->
+<!-- ============================================================ -->
+
+<style>
+  /* --- WRAPPER UTAMA & CANVAS BACKGROUND --- */
+  .lp-page {
+    position: relative;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Fixed Canvas Full Screen tanpa distorsi ratio */
+  #starNetworkCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* --- FIXED NAVBAR ON SCROLL --- */
+  .lp-navbar-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
+  }
+
+  [data-theme="light"] .lp-navbar-fixed {
+    background: rgba(255, 255, 255, 0.88);
+  }
+
+  /* --- HERO SECTION --- */
+  .lp-hero-custom {
+    padding-top: 105px;
+    padding-bottom: 40px;
+    min-height: calc(100vh - 20px);
+    display: flex;
+    align-items: center;
+  }
+
+  .text-gradient-primary {
+    color: #2563EB !important;
+    display: inline-block;
+  }
+
+  /* --- TOAST NOTIFIKASI SOCIAL PROOF --- */
+  .lp-notif-pill {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 9999;
+    padding: 8px 14px;
+    border-radius: 50px;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    max-width: 380px;
+  }
+
+  [data-theme="light"] .lp-notif-pill {
+    background: rgba(255, 255, 255, 0.94);
+    border-color: rgba(37, 99, 235, 0.3);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.15);
+  }
+
+  .lp-notif-pill.pill-show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .lp-notif-pill.pill-hide {
+    opacity: 0;
+    transform: translateY(14px);
+    pointer-events: none;
+  }
+
+  .lp-notif-pill-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.2);
+    color: #3B82F6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .lp-notif-tag-mini {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #A855F7;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+
+  .lp-notif-text-mini {
+    font-size: 0.76rem;
+    line-height: 1.3;
+    color: #E2E8F0;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  [data-theme="light"] .lp-notif-text-mini {
+    color: #1E293B;
+  }
+
+  /* --- STYLING KARTU LANDING PAGE --- */
+  .lp-bento-mini {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    box-shadow: var(--card-shadow);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    height: 100%;
+  }
+
+  .lp-bento-mini:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: var(--primary-blue);
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.15);
+  }
+
+  .lp-bento-mini:hover .lp-icon-box-sm {
+    transform: scale(1.15) rotate(-6deg);
+  }
+
+  /* Stepper Card Layout Ramping */
+  .lp-stepper-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.25rem 1.35rem;
+    height: 100%;
+    position: relative;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: var(--card-shadow);
+  }
+
+  .lp-stepper-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-blue);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Card Keunggulan Scale Up Smooth */
+  .lp-split-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.2rem;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .lp-split-item:hover {
+    transform: translateY(-4px) scale(1.025);
+    border-color: var(--primary-blue);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.16);
+  }
+
+  .lp-icon-box-sm {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .lp-stepper-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Hover Item FAQ Glow & Highlight */
+  .accordion-item {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .accordion-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(37, 99, 235, 0.45) !important;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.12);
+  }
+
+  .accordion-button {
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  .accordion-button:hover {
+    color: var(--primary-blue) !important;
+    background-color: var(--primary-light) !important;
+  }
+
+  [data-theme="dark"] .accordion-item:hover {
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.2);
+  }
+
+  [data-theme="dark"] .accordion-button:hover {
+    color: #60A5FA !important;
+    background-color: rgba(59, 130, 246, 0.15) !important;
+  }
+
+  /* ============================================================
+     LANDING CTA BUTTONS — HEIGHT SYNC WITH LOGIN PORTAL
+     Semua tombol CTA Landing menggunakan tinggi 38px.
+     Tidak menyentuh tombol FAQ / theme toggle.
+     ============================================================ */
+  .lp-page .btn-primary-custom,
+  .lp-page .btn-outline-secondary {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    line-height: 1.2 !important;
+  }
+
+  /* TINGGI TOMBOL HP UNIFORM & PRESISI */
+  @media (max-width: 768px) {
+    .landing-hero,
+    .hero-section {
+      min-height: auto !important;
+      padding-top: 0 !important;
+      padding-bottom: 20px !important;
+      margin-top: -10px !important;
+      justify-content: flex-start !important;
+    }
+
+    .landing-hero .hero-badge,
+    .hero-section .hero-badge {
+      margin-top: 0 !important;
+      margin-bottom: 6px !important;
+    }
+
+    .landing-hero h1,
+    .hero-section .hero-title {
+      font-size: 1.85rem !important;
+      line-height: 1.25 !important;
+      margin-top: 2px !important;
+      margin-bottom: 10px !important;
+    }
+
+    .landing-hero p,
+    .hero-section .hero-subtitle {
+      margin-top: 0 !important;
+      margin-bottom: 16px !important;
+      font-size: 0.86rem !important;
+      line-height: 1.48 !important;
+    }
+
+    .landing-hero .btn,
+    .hero-section .btn,
+    .lp-hero-btn,
+    .lp-hero-custom .btn {
+      padding: 10px 20px !important;
+      font-size: 0.88rem !important;
+      height: 38px !important;
+      min-height: 38px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-sizing: border-box !important;
+    }
+
+    .login-mobile-container {
+      align-items: center !important;
+      justify-content: center !important;
+      min-height: 100vh !important;
+      padding: 1rem !important;
+    }
+  }
+</style>
+
+<script>
+  var DEFAULT_LANDING = {
+    settings: {
+      hero_badge: 'Portal Member Premium',
+      hero_title: 'Kembangkan Proyek Aplikasi Web Anda Dengan Cepat',
+      hero_subtitle: 'Akses instan ke berbagai tools canggih, video tutorial eksklusif, akses web siap pakai, bonus produk digital, komunitas, dan pameran karya member.',
+      hero_cta_primary: 'Login Portal',
+      hero_cta_secondary: 'Jelajahi Fitur',
+      hero_image: 'https://lh3.googleusercontent.com/d/1rtwJ56R526s9KZmjv8TW3G6mXptPU8A8',
+      footer_copyright: '© 2026 Why Dev. All rights reserved.'
+    },
+    features: [
+      { ID: 'FEA-1', Icon: 'bi-play-btn-fill', Title: 'Akses Tutorial', Description: 'Video panduan langkah demi langkah dari level dasar hingga mahir.' },
+      { ID: 'FEA-2', Icon: 'bi-tools', Title: 'Akses Tools', Description: 'Generator otomatis untuk efisiensi coding dan workflow harian.' },
+      { ID: 'FEA-3', Icon: 'bi-layout-text-window', Title: 'Contoh Web', Description: 'Contoh website yang bisa kamu jadikan referensi pembuatan.' },
+      { ID: 'FEA-4', Icon: 'bi-key-fill', Title: 'Hak Akses Web', Description: 'Akses database website gratis yang bisa kamu gunakan sesuai keinginan.' },
+      { ID: 'FEA-5', Icon: 'bi-gift-fill', Title: 'Bonus Gratis', Description: 'Download langsung produk digital, ebook, dan modul premium secara gratis.' },
+      { ID: 'FEA-6', Icon: 'bi-rocket-takeoff-fill', Title: 'Karya Member', Description: 'Pameran aplikasi hasil buatan member Why Dev dan wadah jual beli karya.' }
+    ],
+    steps: [
+      { ID: 'STP-1', StepNumber: '01', Icon: 'bi-person-badge', Title: 'Login Ke Akun Anda', Description: 'Gunakan kredensial email dan password yang terdaftar.' },
+      { ID: 'STP-2', StepNumber: '02', Icon: 'bi-grid-fill', Title: 'Pilih Layanan Utama', Description: 'Navigasi ke tools, tutorial, karya member, dan bonus sesuai kebutuhan Anda.' },
+      { ID: 'STP-3', StepNumber: '03', Icon: 'bi-rocket-takeoff-fill', Title: 'Eksekusi & Bangun Proyek', Description: 'Manfaatkan seluruh akses premium untuk menyelesaikan proyek cepat.' }
+    ],
+    benefits: [
+      { ID: 'BEN-1', Icon: 'bi-shield-fill-check', Title: 'Akses Tanpa Batas', Description: 'Seluruh konten dan alat dapat diakses 24/7 kapan saja Anda butuhkan.' },
+      { ID: 'BEN-2', Icon: 'bi-arrow-repeat', Title: 'Update Rutin', Description: 'Penambahan tutorial, tools, dan bonus baru secara gratis.' },
+      { ID: 'BEN-3', Icon: 'bi-lightning-charge-fill', Title: 'Performa Tinggi', Description: 'Sistem aplikasi ringan, responsif di HP maupun Laptop.' }
+    ]
+  };
+
+  /* CANVAS BINTANG BULAT SEMPURNA */
+  function initStarNetworkCanvas() {
+    var canvas = document.getElementById('starNetworkCanvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var particles = [];
+    var particleCount = 60;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    for (var i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: Math.random() * 2 + 0.8,
+        alpha: Math.random() * 0.7 + 0.3
+      });
+    }
+
+    function animate() {
+      if (!document.getElementById('starNetworkCanvas')) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var starColor = isDark ? '255, 255, 255' : '37, 99, 235';
+      var lineColor = isDark ? '168, 85, 247' : '37, 99, 235';
+
+      for (var i = 0; i < particleCount; i++) {
+        var p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + starColor + ',' + p.alpha + ')';
+        ctx.fill();
+
+        for (var j = i + 1; j < particleCount; j++) {
+          var p2 = particles[j];
+          var dx = p.x - p2.x;
+          var dy = p.y - p2.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 130) {
+            var lineAlpha = (1 - dist / 130) * (isDark ? 0.22 : 0.12);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = 'rgba(' + lineColor + ',' + lineAlpha + ')';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+
+  /* ROTASI NOTIFIKASI SOCIAL PROOF (AKTIVITAS MEMBER & LIVE SYSTEM) */
+  function initDynamicSocialProof() {
+    var pill = document.getElementById('lpSocialProofPill');
+    if (!pill) return;
+
+    if (window.lpSocialProofInterval) clearInterval(window.lpSocialProofInterval);
+    if (window.lpSocialProofTimeout) clearTimeout(window.lpSocialProofTimeout);
+
+    var activities = [
+      { name: 'Budi', tag: 'AKSES TOOLS', action: 'membuka', target: 'Prompt Builder V.1 | Why Dev', icon: 'bi-tools', time: 'Baru saja' },
+      { name: 'Rian', tag: 'AKSES TOOLS', action: 'menggunakan', target: 'App Builder V.1 | Why Dev', icon: 'bi-tools', time: 'Baru saja' },
+      { name: 'Siti', tag: 'AKSES TOOLS', action: 'mengakses', target: 'AI Create Soal Ujian', icon: 'bi-tools', time: '1m lalu' },
+      { name: 'Dedi', tag: 'AKSES TOOLS', action: 'menggunakan', target: 'AI Create Materi Ajar', icon: 'bi-tools', time: '2m lalu' },
+      { name: 'Fajar', tag: 'AKSES TOOLS', action: 'mencoba', target: 'AI Create Prompt Worksheet', icon: 'bi-tools', time: '3m lalu' },
+      { name: 'Hendra', tag: 'AKSES TOOLS', action: 'membuka', target: 'AI Script & VO', icon: 'bi-tools', time: '4m lalu' },
+
+      { name: 'Andi', tag: 'TUTORIAL', action: 'menonton', target: 'Part 1. Tutorial Prompt GAS', icon: 'bi-play-btn-fill', time: 'Baru saja' },
+      { name: 'Eko', tag: 'TUTORIAL', action: 'mempelajari', target: 'Part 2. Tutorial Code GAS', icon: 'bi-play-btn-fill', time: '2m lalu' },
+      { name: 'Reza', tag: 'TUTORIAL', action: 'menyelesaikan', target: 'Part 3. Tutorial Deploy Website', icon: 'bi-play-btn-fill', time: '5m lalu' },
+
+      { name: 'Ahmad', tag: 'BONUS GRATIS', action: 'mengunduh', target: 'Produk Digital Bebas Jual', icon: 'bi-gift-fill', time: 'Baru saja' },
+      { name: 'Dimas', tag: 'BONUS GRATIS', action: 'mengklaim', target: 'Kumpulan Prompt Awal Aplikasi', icon: 'bi-gift-fill', time: '3m lalu' },
+      { name: 'Rizal', tag: 'BONUS GRATIS', action: 'membuka', target: 'Referensi Tampilan Aplikasi (UI)', icon: 'bi-gift-fill', time: '6m lalu' },
+
+      { name: 'Bagus', tag: 'MEMBER BARU', action: 'bergabung', target: 'Member Lifetime Why Dev', icon: 'bi-person-badge-fill', time: 'Baru saja' }
+    ];
+
+    function cycleNotification() {
+      var isMemberActive = Math.random() < 0.35; // Peluang 35% muncul notif Live System
+      
+      if (isMemberActive) {
+        var randomCount = Math.floor(Math.random() * (45 - 15 + 1)) + 15;
+        pill.innerHTML = 
+          '<div class="lp-notif-pill-icon" style="color: #10B981; background: rgba(16, 185, 129, 0.2);"><i class="bi bi-broadcast"></i></div>' +
+          '<div class="d-flex flex-column min-w-0 flex-grow-1">' +
+            '<div class="d-flex align-items-center justify-content-between gap-2 mb-0.5">' +
+              '<span class="lp-notif-tag-mini" style="color: #10B981;">LIVE SYSTEM</span>' +
+              '<span class="text-muted" style="font-size: 0.65rem;">Realtime</span>' +
+            '</div>' +
+            '<p class="lp-notif-text-mini">' +
+              '<strong class="text-success">' + randomCount + ' member</strong> sedang aktif di portal saat ini' +
+            '</p>' +
+          '</div>';
+      } else {
+        var item = activities[Math.floor(Math.random() * activities.length)];
+        pill.innerHTML = 
+          '<div class="lp-notif-pill-icon"><i class="bi ' + item.icon + '"></i></div>' +
+          '<div class="d-flex flex-column min-w-0 flex-grow-1">' +
+            '<div class="d-flex align-items-center justify-content-between gap-2 mb-0.5">' +
+              '<span class="lp-notif-tag-mini">' + item.tag + '</span>' +
+              '<span class="text-muted" style="font-size: 0.65rem;">' + item.time + '</span>' +
+            '</div>' +
+            '<p class="lp-notif-text-mini">' +
+              '<strong>' + item.name + '</strong> ' + item.action + ' <span class="text-primary fw-semibold">' + item.target + '</span>' +
+            '</p>' +
+          '</div>';
+      }
+
+      pill.classList.remove('pill-hide');
+      pill.classList.add('pill-show');
+
+      window.lpSocialProofTimeout = setTimeout(function() {
+        pill.classList.remove('pill-show');
+        pill.classList.add('pill-hide');
+      }, 4500);
+    }
+
+    window.lpSocialProofTimeout = setTimeout(function() {
+      cycleNotification();
+      window.lpSocialProofInterval = setInterval(cycleNotification, 9500);
+    }, 1200);
+  }
+
+  function initScrollAnimation() {
+    var targets = document.querySelectorAll('.lp-hero-title, .lp-hero-sub, .lp-hero-card, .lp-bento-mini, .lp-stepper-card, .lp-split-item, .lp-section-title, .accordion-item');
+    if (!targets.length) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    targets.forEach(function(el) {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    initStarNetworkCanvas();
+    initDynamicSocialProof();
+  }
+
+  function renderLandingPage() {
+    var ld = STATE.landingData || {};
+    var ls = ld.settings || {};
+    var df = DEFAULT_LANDING.settings;
+
+    var badge = ls.hero_badge || df.hero_badge;
+    var rawTitle = ls.hero_title || df.hero_title;
+    var formattedTitle = rawTitle.replace('Aplikasi Web', '<span class="text-gradient-primary">Aplikasi Web</span>');
+    var subtitle = ls.hero_subtitle || df.hero_subtitle;
+    var ctaPrimary = ls.hero_cta_primary || df.hero_cta_primary;
+    var ctaSecondary = ls.hero_cta_secondary || df.hero_cta_secondary;
+    var heroImg = getValidImage(ls.hero_image || STATE.settings.hero_image_url, df.hero_image);
+
+    var features = (ld.features && ld.features.length > 0) ? ld.features : DEFAULT_LANDING.features;
+    var steps = (ld.steps && ld.steps.length > 0) ? ld.steps : DEFAULT_LANDING.steps;
+    var benefits = (ld.benefits && ld.benefits.length > 0) ? ld.benefits : DEFAULT_LANDING.benefits;
+
+    var footerCopy = ls.footer_copyright || STATE.settings.footer_text || df.footer_copyright;
+
+    var featureColors = [
+      { color: '#EF4444', bg: 'rgba(239, 68, 68, 0.12)' },
+      { color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
+      { color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.12)' },
+      { color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
+      { color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.12)' },
+      { color: '#EC4899', bg: 'rgba(236, 72, 153, 0.12)' }
+    ];
+
+    var stepColors = [
+      { color: '#2563EB', bg: 'rgba(37, 99, 235, 0.12)' },
+      { color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
+      { color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' }
+    ];
+
+    var benefitColors = [
+      { color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
+      { color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.12)' },
+      { color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.12)' }
+    ];
+
+    return '<div class="lp-page">' +
+      '<canvas id="starNetworkCanvas"></canvas>' +
+
+      /* NAVBAR FIXED */
+      '<nav class="lp-navbar lp-navbar-fixed">' +
+        '<div class="container d-flex align-items-center justify-content-between position-relative px-3 px-md-4 py-2.5">' +
+          '<a class="navbar-brand fw-bold fs-5 text-primary d-flex align-items-center gap-2 m-0" href="#">' + renderBrandLogo() + '<span>' + (STATE.settings.site_name || 'WHY DEV') + '</span></a>' +
+          
+          '<div class="d-none d-lg-flex align-items-center gap-4 position-absolute start-50 translate-middle-x">' +
+            '<a href="#fitur" class="text-decoration-none fw-semibold text-muted hover-primary small">Fitur</a>' +
+            '<a href="#cara-kerja" class="text-decoration-none fw-semibold text-muted hover-primary small">Cara Kerja</a>' +
+            '<a href="#mengapa-memilih" class="text-decoration-none fw-semibold text-muted hover-primary small">Keunggulan</a>' +
+            '<a href="#faq" class="text-decoration-none fw-semibold text-muted hover-primary small">FAQ</a>' +
+          '</div>' +
+
+          '<div class="d-flex align-items-center ms-auto">' +
+            '<button class="theme-toggle-btn" onclick="toggleTheme()"><i class="bi bi-moon-stars-fill"></i></button>' +
+          '</div>' +
+        '</div>' +
+      '</nav>' +
+
+      /* HERO SECTION */
+      '<section class="lp-hero lp-hero-custom position-relative" style="z-index: 1;">' +
+        '<div class="container">' +
+          '<div class="row align-items-center gy-4 gy-lg-0">' +
+            '<div class="col-lg-6 text-center text-lg-start">' +
+              '<span class="lp-badge"><i class="bi bi-stars"></i>' + badge + '</span>' +
+              '<h1 class="lp-hero-title">' + formattedTitle + '</h1>' +
+              '<p class="lp-hero-sub">' + subtitle + '</p>' +
+              '<div class="d-flex flex-row align-items-center justify-content-center justify-content-lg-start gap-2 gap-sm-3">' +
+                '<button class="btn btn-primary-custom lp-hero-btn px-4 fs-6" onclick="renderView(\'login\')">' + ctaPrimary + '</button>' +
+                '<a href="#fitur" class="btn btn-outline-secondary lp-hero-btn px-3 px-sm-4 fs-6 text-decoration-none rounded-3 fw-semibold">' + ctaSecondary + '</a>' +
+              '</div>' +
+            '</div>' +
+            '<div class="col-lg-6">' +
+              '<div class="lp-hero-card">' +
+                '<img src="' + heroImg + '" class="lp-hero-img" alt="Hero Preview" onerror="this.onerror=null; this.src=\'' + DEFAULT_LANDING.settings.hero_image + '\';">' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</section>' +
+
+      /* SECTION 1: FITUR (SPASI CHIPSET ICON ME-2 DIBERIKAN) */
+      '<section id="fitur" class="lp-section position-relative" style="z-index: 1;">' +
+        '<div class="container">' +
+          '<h2 class="lp-section-title">Fitur & Akses Utama</h2>' +
+          '<p class="lp-section-sub">Segala fasilitas pendukung pengembangan aplikasi telah kami siapkan dalam satu portal terpadu.</p>' +
+          
+          '<div class="row g-3 g-md-4 align-items-center">' +
+            '<div class="col-12 col-lg-7">' +
+              '<div class="row g-3">' +
+                features.map(function(ft, idx) {
+                  var fc = featureColors[idx % featureColors.length];
+                  var iconClass = parseIconClass(ft.Icon, 'bi bi-stars');
+                  return '<div class="col-12 col-sm-6">' +
+                    '<div class="lp-bento-mini d-flex align-items-start gap-3">' +
+                      '<div class="lp-icon-box-sm" style="color: ' + fc.color + '; background-color: ' + fc.bg + ';"><i class="' + iconClass + '"></i></div>' +
+                      '<div>' +
+                        '<h6 class="fw-bold fs-6 mb-1">' + ft.Title + '</h6>' +
+                        '<p class="text-muted small mb-0" style="font-size: 0.8rem; line-height: 1.45;">' + ft.Description + '</p>' +
+                      '</div>' +
+                    '</div>' +
+                  '</div>';
+                }).join('') +
+              '</div>' +
+            '</div>' +
+
+            /* DESKRIPSI UTAMA (IKON CHIPSET DIBERI SPASI ME-2) */
+            '<div class="col-12 col-lg-5 text-center text-lg-start ps-lg-4 mt-4 mt-lg-0">' +
+              '<span class="badge bg-primary-subtle text-primary fw-bold mb-3 px-3 py-1.5 rounded-pill d-inline-flex align-items-center" style="font-size:0.8rem;">' +
+                '<i class="bi bi-cpu-fill me-2"></i>EKOSISTEM WHY DEV' +
+              '</span>' +
+              '<h3 class="fw-bold mb-3 fs-3">Solusi Terpadu Developer & Kreator</h3>' +
+              '<p class="text-muted small mb-4" style="line-height: 1.6; font-size: 0.92rem;">Why Dev hadir menyediakan ekosistem lengkap berbasis Google Apps Script & Web Apps. Hemat waktu pengembangan aplikasi hingga 80% dengan generator otomatis, template siap pakai, dan komunitas aktif.</p>' +
+              '<button class="btn btn-primary-custom px-4 py-2.5 rounded-3 fs-6 fw-semibold" onclick="window.open(\'https://lynk.id/whydevportal/k31j4p484lgj\', \'_blank\', \'noopener,noreferrer\')">Mulai Akses Sekarang <i class="bi bi-arrow-right ms-1"></i></button>' +
+            '</div>' +
+
+          '</div>' +
+        '</div>' +
+      '</section>' +
+
+      /* SECTION 2: CARA KERJA (SPASI DI ANTARA BADGE ANGKA & JUDUL ME-2.5) */
+      '<section id="cara-kerja" class="lp-section position-relative py-5" style="z-index: 1;">' +
+        '<div class="container">' +
+          '<h2 class="lp-section-title">Cara Kerja Portal</h2>' +
+          '<p class="lp-section-sub">Tiga langkah mudah untuk memulai produktivitas Anda bersama Why Dev.</p>' +
+          
+          '<div class="row g-3 g-md-4 align-items-stretch">' +
+            steps.map(function(sp, idx) {
+              var sc = stepColors[idx % stepColors.length];
+              var iconClass = parseIconClass(sp.Icon, 'bi bi-check-circle-fill');
+              return '<div class="col-12 col-md-4">' +
+                '<div class="lp-stepper-card">' +
+                  '<div class="d-flex align-items-center mb-2.5">' +
+                    '<div class="lp-stepper-badge me-2.5" style="color: ' + sc.color + '; background-color: ' + sc.bg + ';">' + sp.StepNumber + '</div>' +
+                    '<h5 class="fw-bold fs-6 mb-0 flex-grow-1">' + sp.Title + '</h5>' +
+                    '<div class="lp-icon-box-sm ms-2" style="color: ' + sc.color + '; background-color: ' + sc.bg + '; width: 36px; height: 36px; min-width: 36px; font-size: 1rem; border-radius: 10px;"><i class="' + iconClass + '"></i></div>' +
+                  '</div>' +
+                  '<p class="text-muted small mb-0" style="line-height: 1.5;">' + sp.Description + '</p>' +
+                '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+
+        '</div>' +
+      '</section>' +
+
+      /* SECTION 3: KEUNGGULAN */
+      '<section id="mengapa-memilih" class="lp-section position-relative py-5" style="z-index: 1;">' +
+        '<div class="container">' +
+          '<div class="row align-items-center gy-4">' +
+            '<div class="col-12 col-lg-5 text-center text-lg-start">' +
+              '<span class="badge bg-success-subtle text-success fw-bold px-3 py-1.5 rounded-pill mb-3" style="font-size: 0.8rem;"><i class="bi bi-shield-check me-1"></i>NILAI TAMBAH</span>' +
+              '<h2 class="fw-bold fs-2 mb-3">Mengapa Memilih Why Dev?</h2>' +
+              '<p class="text-muted small mb-4" style="line-height: 1.6; font-size: 0.95rem;">Nikmati ekosistem terintegrasi yang didesain khusus untuk efisiensi dan kemudahan pengembangan web kamu tanpa kendala teknis.</p>' +
+              '<button class="btn btn-primary-custom px-4 py-2.5 rounded-3 fw-semibold" onclick="window.open(\'https://lynk.id/whydevportal/k31j4p484lgj\', \'_blank\', \'noopener,noreferrer\')">Gabung Komunitas Member</button>' +
+            '</div>' +
+
+            '<div class="col-12 col-lg-7">' +
+              '<div class="d-flex flex-column gap-3">' +
+                benefits.map(function(bn, idx) {
+                  var bc = benefitColors[idx % benefitColors.length];
+                  var iconClass = parseIconClass(bn.Icon, 'bi bi-shield-fill-check');
+                  return '<div class="lp-split-item d-flex align-items-start gap-3">' +
+                    '<div class="lp-icon-box-sm" style="color: ' + bc.color + '; background-color: ' + bc.bg + '; width: 48px; height: 48px; min-width: 48px; font-size: 1.35rem;"><i class="' + iconClass + '"></i></div>' +
+                    '<div>' +
+                      '<h5 class="fw-bold fs-6 mb-1">' + bn.Title + '</h5>' +
+                      '<p class="text-muted small mb-0" style="line-height: 1.5;">' + bn.Description + '</p>' +
+                    '</div>' +
+                  '</div>';
+                }).join('') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</section>' +
+
+      /* SECTION 4: FAQ */
+      '<section id="faq" class="lp-section position-relative py-5" style="z-index: 1;">' +
+        '<div class="container" style="max-width: 850px;">' +
+          '<h2 class="lp-section-title">Pertanyaan Sering Diajukan (FAQ)</h2>' +
+          '<p class="lp-section-sub mb-4">Jawaban lengkap seputar penggunaan dan akses Portal Member Why Dev.</p>' +
+          '<div class="accordion accordion-flush d-flex flex-column gap-3" id="accordionFAQ">' +
+            
+            '<div class="accordion-item rounded-3 overflow-hidden">' +
+              '<h2 class="accordion-header">' +
+                '<button class="accordion-button collapsed fw-bold small" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">' +
+                  'Apa itu Portal Member Why Dev?' +
+                '</button>' +
+              '</h2>' +
+              '<div id="faq1" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">' +
+                '<div class="accordion-body small">' +
+                  'Portal terpadu tempat Anda bisa mengakses berbagai tools otomatisasi berbasis Google Apps Script, tutorial video, contoh template web, hak akses database, bonus produk digital, hingga pameran karya member.' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="accordion-item rounded-3 overflow-hidden">' +
+              '<h2 class="accordion-header">' +
+                '<button class="accordion-button collapsed fw-bold small" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">' +
+                  'Siapa saja yang cocok menggunakan portal ini?' +
+                '</button>' +
+              '</h2>' +
+              '<div id="faq2" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">' +
+                '<div class="accordion-body small">' +
+                  'Developer, freelancer, staf sekolah/kantor, hingga pemula yang ingin membangun sistem otomatisasi web dengan cepat tanpa perlu coding dari nol.' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="accordion-item rounded-3 overflow-hidden">' +
+              '<h2 class="accordion-header">' +
+                '<button class="accordion-button collapsed fw-bold small" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">' +
+                  'Apakah materi dan tools di dalam portal selalu di-update?' +
+                '</button>' +
+              '</h2>' +
+              '<div id="faq3" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">' +
+                '<div class="accordion-body small">' +
+                  'Ya, seluruh tools, contoh web, dan tutorial akan terus diperbarui secara berkala dan bisa diakses langsung oleh member aktif secara gratis.' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="accordion-item rounded-3 overflow-hidden">' +
+              '<h2 class="accordion-header">' +
+                '<button class="accordion-button collapsed fw-bold small" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">' +
+                  'Apakah contoh web dan script bisa digunakan untuk proyek klien?' +
+                '</button>' +
+              '</h2>' +
+              '<div id="faq4" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">' +
+                '<div class="accordion-body small">' +
+                  'Bisa. Seluruh resource yang ada dalam portal bebas Anda manfaatkan dan modifikasi untuk kebutuhan proyek pribadi maupun pekerjaan klien.' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="accordion-item rounded-3 overflow-hidden">' +
+              '<h2 class="accordion-header">' +
+                '<button class="accordion-button collapsed fw-bold small" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">' +
+                  'Bagaimana jika saya lupa password atau mengalami kendala teknis?' +
+                '</button>' +
+              '</h2>' +
+              '<div id="faq5" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">' +
+                '<div class="accordion-body small">' +
+                  'Anda dapat menghubungi admin melalui grup komunitas atau kontak bantuan yang tersedia untuk memulihkan akses akun Anda.' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+          '</div>' +
+        '</div>' +
+      '</section>' +
+
+      /* ELEMEN NOTIFIKASI SOCIAL PROOF */
+      '<div id="lpSocialProofPill" class="lp-notif-pill pill-hide"></div>' +
+
+      /* FOOTER */
+      '<footer class="lp-footer text-center position-relative" style="z-index: 1;">' +
+        '<div class="container">' +
+          '<div class="small text-muted fw-semibold">' + footerCopy + '</div>' +
+        '</div>' +
+      '</footer>' +
+    '</div>';
+  }
+</script>

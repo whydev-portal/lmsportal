@@ -1,0 +1,2808 @@
+<!-- ============================================================ -->
+<!-- FILE: JS.html (UPDATED: REALTIME NOTIFICATIONS & ALERT CONFIRM) -->
+<!-- ============================================================ -->
+
+<style>
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .content-container {
+    position: relative;
+    min-height: 400px;
+  }
+
+  .whydev-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(15, 23, 42, .48);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    animation: whyConfirmFade .18s ease-out;
+  }
+  .whydev-confirm-card {
+    width: 100%;
+    max-width: 350px;
+    padding: 20px 20px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: var(--bg-card);
+    color: var(--text-main);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, .24);
+    text-align: center;
+    animation: whyConfirmPop .2s ease-out;
+  }
+  .whydev-confirm-icon {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: rgba(37, 99, 235, .11);
+    color: var(--primary-blue);
+    font-size: 1.30rem;
+  }
+  @keyframes whyConfirmFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes whyConfirmPop { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+  .nav-link-custom {
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .nav-link-custom:hover {
+    transform: translateX(5px);
+  }
+
+  .nav-link-custom i {
+    transition: transform 0.2s ease;
+  }
+
+  .nav-link-custom:hover i {
+    transform: scale(1.15);
+  }
+
+  .card-custom {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .card-custom:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  /* ANIMASI SCROLL ON LANDING PAGE */
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(35px);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+
+  .animate-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .stagger-item {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: staggerAppear 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: opacity, transform;
+  }
+
+  @keyframes staggerAppear {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .app-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 250px;
+    background-color: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    border-radius: 12px;
+  }
+
+  .app-loading-overlay.fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 99999 !important;
+    border-radius: 0 !important;
+  }
+
+  [data-theme="dark"] .app-loading-overlay {
+    background-color: rgba(11, 19, 43, 0.75);
+  }
+
+  .app-loading-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .simple-spinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--primary-blue);
+    border-radius: 50%;
+    animation: spinSimple 0.75s linear infinite;
+  }
+
+  @keyframes spinSimple {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .badge-online {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    vertical-align: middle !important;
+    padding: 0.3em 0.6em !important;
+    line-height: 1 !important;
+  }
+
+  .badge-online i {
+    font-size: 0.45rem !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  .badge-online span {
+    display: inline-block !important;
+    line-height: 1 !important;
+  }
+
+  .member-online-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  min-width: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-right: 5px;
+  vertical-align: middle;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.12);
+}
+
+  /* ============================================================
+     REVISI KOMPAK: MODAL PENGUMUMAN & TOMBOL LOGIN
+     Hanya menargetkan elemen spesifik agar layout lain tetap aman.
+     ============================================================ */
+  #announcementModal .modal-dialog {
+    max-width: 470px !important;
+    margin: 1rem auto !important;
+  }
+
+  #announcementModal .modal-content {
+    border-radius: 16px !important;
+  }
+
+  #announcementModal .modal-header {
+    padding: 12px 16px !important;
+  }
+
+  #announcementModal .modal-title {
+    font-size: 0.95rem !important;
+  }
+
+  #announcementModal .modal-body {
+    padding: 14px 16px 16px !important;
+  }
+
+  #announcementModal .modal-body .mb-3 {
+    margin-bottom: 12px !important;
+  }
+
+  #announcementModal .modal-body .form-label {
+    margin-bottom: 6px !important;
+  }
+
+  #announcementModal .modal-body .form-control {
+    min-height: 42px !important;
+    padding: 8px 12px !important;
+  }
+
+  #announcementModal #annMessage {
+    min-height: 92px !important;
+    height: 92px !important;
+    resize: vertical;
+  }
+
+  #announcementModal .modal-body .text-end {
+    margin-top: 4px !important;
+  }
+
+  #announcementModal .modal-body .text-end .btn {
+    min-height: 40px !important;
+    padding: 7px 14px !important;
+  }
+
+  #loginSubmitBtn {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 16px !important;
+    line-height: 38px !important;
+    font-size: 0.9rem !important;
+  }
+
+  @media (max-width: 576px) {
+    #announcementModal .modal-dialog {
+      max-width: calc(100% - 24px) !important;
+      margin: 12px auto !important;
+    }
+
+    #announcementModal .modal-header {
+      padding: 11px 14px !important;
+    }
+
+    #announcementModal .modal-body {
+      padding: 12px 14px 14px !important;
+    }
+
+    #announcementModal #annMessage {
+      min-height: 88px !important;
+      height: 88px !important;
+    }
+  }
+
+  /* ============================================================
+     BACKDROP MODAL TAMBAH KONTEN
+     Menyamakan tingkat gelap background modal konten dengan
+     modal Pengumuman agar isi modal lebih fokus dan tidak bertabrakan
+     dengan warna dashboard di belakangnya.
+     ============================================================ */
+  /* Backdrop gelap konsisten untuk semua modal konten + pengumuman. */
+  body:has(#crudModal.show) .modal-backdrop.show,
+  body:has(#announcementModal.show) .modal-backdrop.show {
+    background-color: #0F172A !important;
+    opacity: 0.72 !important;
+  }
+
+  /* Pastikan backdrop tetap berada di bawah modal dan menutup seluruh viewport. */
+  body:has(#crudModal.show) .modal-backdrop.show,
+  body:has(#announcementModal.show) .modal-backdrop.show {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 1050 !important;
+  }
+
+  /* LOGO WHY DEV TETAP BIRU DI MODE GELAP */
+  [data-theme="dark"] .navbar-brand span,
+  [data-theme="dark"] .sidebar-brand span {
+    color: var(--primary-blue, #2563EB) !important;
+  }
+
+  /* KHUSUS REVISI TAMPILAN HP */
+  @media (max-width: 768px) {
+    .lp-hero,
+    .lp-hero-custom {
+      padding-top: 68px !important;
+      padding-bottom: 20px !important;
+      min-height: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+    }
+
+    .lp-badge {
+      margin-top: 5px !important;
+      margin-bottom: 12px !important;
+      display: inline-block !important;
+    }
+
+    .lp-hero-title {
+      font-size: 2.05rem !important;
+      line-height: 1.28 !important;
+      font-weight: 800 !important;
+      margin-top: 0 !important;
+      margin-bottom: 12px !important;
+    }
+
+    .lp-hero-sub {
+      font-size: 0.88rem !important;
+      line-height: 1.55 !important;
+      margin-bottom: 20px !important;
+      padding: 0 4px !important;
+    }
+
+    .lp-hero-btn {
+      padding: 10px 20px !important;
+      font-size: 0.88rem !important;
+      height: auto !important;
+    }
+
+    .lp-hero-card {
+      margin-top: 20px !important;
+    }
+  }
+</style>
+
+<script>
+  var STATE = {
+    token: localStorage.getItem('WHYDEV_TOKEN') || '',
+    user: null,
+    settings: {
+      site_name: 'WHY DEV',
+      hero_title: 'Welcome to Why Dev',
+      hero_subtitle: 'Portal eksklusif untuk mengakses berbagai tools, akses tutorial, komunitas, contoh web, hak akses web, bonus gratis, dan karya member.',
+      footer_text: '© 2026 Why Dev. All Rights Reserved.',
+      default_theme: 'light',
+      logo_url: '',
+      hero_image_url: ''
+    },
+    landingData: null,
+    dashboardCache: null,
+    settingsCache: null,
+    currentView: 'landing',
+    theme: localStorage.getItem('WHYDEV_THEME') || 'light',
+    isPreloaded: false,
+    isPreviewMode: false,
+    notifications: [],
+    unreadNotifCount: 0,
+    dataStore: {
+      tools: {},
+      courses: {},
+      community: {},
+      websites: {},
+      accessWebs: {},
+      bonuses: {},
+      karyaMembers: {},
+      members: {}
+    }
+  };
+
+  var DEFAULT_LANDING = {
+    settings: {
+      hero_badge: 'Portal Member Premium',
+      hero_title: 'Kembangkan Proyek Aplikasi Web Anda Dengan Cepat',
+      hero_subtitle: 'Akses instan ke berbagai tools canggih, video tutorial eksklusif, akses web siap pakai, bonus produk digital, komunitas, dan pameran karya member.',
+      hero_cta_primary: 'Login Portal',
+      hero_cta_secondary: 'Jelajahi Fitur',
+      hero_image: 'https://lh3.googleusercontent.com/d/1rtwJ56R526s9KZmjv8TW3G6mXptPU8A8',
+      footer_copyright: '© 2026 Why Dev. All Rights Reserved.'
+    },
+    features: [
+      { Icon: 'bi bi-tools', Title: 'Akses Tools', Description: 'Kumpulan generator dan tools otomatisasi berbasis Web Apps Script.' },
+      { Icon: 'bi bi-play-btn-fill', Title: 'Video Tutorial', Description: 'Panduan langkah demi langkah membangun sistem dari tingkat dasar.' },
+      { Icon: 'bi bi-layout-text-window-reverse', Title: 'Contoh Web', Description: 'Template dan contoh sistem web siap pakai untuk studi kasus Anda.' },
+      { Icon: 'bi bi-key-fill', Title: 'Hak Akses Web', Description: 'Akses khusus fitur eksklusif dan spreadsheet database interaktif.' },
+      { Icon: 'bi bi-gift-fill', Title: 'Bonus Gratis', Description: 'Asset premium, ebook, dan bonus sumber daya pendukung dev.' },
+      { Icon: 'bi bi-people-fill', Title: 'Komunitas', Description: 'Diskusi aktif dan support teknis langsung bersama sesama member.' }
+    ],
+    steps: [
+      { StepNumber: '01', Icon: 'bi bi-person-plus-fill', Title: 'Daftar / Login Akun', Description: 'Dapatkan akun akses dari admin atau masuk dengan kredensial terdaftar Anda.' },
+      { StepNumber: '02', Icon: 'bi bi-grid-fill', Title: 'Pilih Fitur & Resource', Description: 'Jelajahi tools, tutorial, dan contoh web yang siap digunakan kapan saja.' },
+      { StepNumber: '03', Icon: 'bi bi-rocket-takeoff-fill', Title: 'Eksekusi & Pamerkan', Description: 'Gunakan script untuk proyek Anda dan publikasikan hasil karya di menu Karya Member.' }
+    ],
+    benefits: [
+      { Icon: 'bi bi-lightning-charge-fill', Title: 'Hemat Waktu 80%', Description: 'Tidak perlu membangun aplikasi dari awal. Gunakan komponen dan script yang sudah teruji.' },
+      { Icon: 'bi bi-cloud-arrow-up-fill', Title: 'Update Terus Menerus', Description: 'Resource, materi tutorial, dan tools selalu diperbarui mengikuti perkembangan terbaru.' },
+      { Icon: 'bi bi-patch-check-fill', Title: 'Dukungan Komunitas Aktif', Description: 'Tanyakan kendala coding Anda dan dapatkan solusi cepat dari komunitas Why Dev.' }
+    ]
+  };
+
+  var DEFAULT_IMAGES = {
+    tools: 'https://lh3.googleusercontent.com/d/1rtwJ56R526s9KZmjv8TW3G6mXptPU8A8',
+    websites: 'https://lh3.googleusercontent.com/d/1rtwJ56R526s9KZmjv8TW3G6mXptPU8A8',
+    accessWebs: 'https://lh3.googleusercontent.com/d/1rtwJ56R526s9KZmjv8TW3G6mXptPU8A8',
+    bonuses: 'https://lh3.googleusercontent.com/d/1rtwJ56R526s9KZmjv8TW3G6mXptPU8A8',
+    community: 'https://lh3.googleusercontent.com/d/1rtwJ56R526s9KZmjv8TW3G6mXptPU8A8',
+    karyaMembers: 'https://lh3.googleusercontent.com/d/1rtwJ56R526s9KZmjv8TW3G6mXptPU8A8'
+  };
+
+  function getTimeGreeting() {
+    var hour = new Date().getHours();
+    if (hour >= 4 && hour < 11) return 'Selamat Pagi';
+    if (hour >= 11 && hour < 15) return 'Selamat Siang';
+    if (hour >= 15 && hour < 18) return 'Selamat Sore';
+    return 'Selamat Malam';
+  }
+
+  function getValidImage(url, defaultUrl) {
+    if (!url || !url.trim() || url.indexOf('15ClZ7DM1N.png') !== -1 || url.indexOf('imglink.cc') !== -1) {
+      return defaultUrl;
+    }
+    var cleanUrl = url.trim();
+    if (cleanUrl.indexOf('drive.google.com') !== -1) {
+      var match = cleanUrl.match(/\/d\/([^\/\?]+)/) || cleanUrl.match(/id=([^&]+)/);
+      if (match && match[1]) {
+        return 'https://lh3.googleusercontent.com/d/' + match[1];
+      }
+    }
+    return cleanUrl;
+  }
+
+  function formatFrontendLabel(value) {
+    var text = String(value || '');
+    var map = {
+      'ADMIN': 'Admin',
+      'MEMBER': 'Member',
+      'PUBLIC': 'Public',
+      'PRIVATE': 'Private',
+      'ACTIVE': 'Active',
+      'INACTIVE': 'Inactive'
+    };
+    return map[text.toUpperCase()] || text;
+  }
+
+  function initScrollAnimations() {
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll('.animate-on-scroll').forEach(function(el) {
+        el.classList.add('is-visible');
+      });
+      return;
+    }
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.animate-on-scroll').forEach(function(el) {
+      observer.observe(el);
+    });
+  }
+
+  var crudModalInstance = null;
+  var videoModalInstance = null;
+  var allNotifModalInstance = null;
+  var announcementModalInstance = null;
+
+  function parseIconClass(rawIcon, defaultIcon) {
+    if (!rawIcon || !rawIcon.trim()) return defaultIcon || 'bi bi-stars';
+    var icon = rawIcon.trim();
+    if (icon === 'bi-shield-check-fill' || icon === 'shield-check-fill') icon = 'bi-shield-fill-check';
+    if (icon.startsWith('bi ') || icon.startsWith('fa ') || icon.startsWith('fab ') || icon.startsWith('fas ')) return icon;
+    if (icon.startsWith('bi-')) return 'bi ' + icon;
+    if (icon.startsWith('fa-')) return 'fa ' + icon;
+    return 'bi bi-' + icon;
+  }
+
+  function applyStaggerAnimation() {
+    setTimeout(function() {
+      var container = document.getElementById('mainContent');
+      if (!container) return;
+      
+      var targets = container.querySelectorAll('.row > [class*="col"], .table-responsive tbody tr, .welcome-card, .card-custom');
+      if (!targets.length) return;
+
+      var isFastView = (STATE.currentView === 'dashboard' || STATE.currentView === 'members' || STATE.currentView === 'settings');
+
+      targets.forEach(function(el, idx) {
+        var delay = isFastView ? Math.min(idx * 20, 300) : Math.min(idx * 85, 1000);
+        var animDuration = isFastView ? 220 : 350;
+
+        el.style.animationDuration = animDuration + 'ms';
+        el.style.animationDelay = delay + 'ms';
+        el.classList.add('stagger-item');
+
+        setTimeout(function() {
+          el.classList.remove('stagger-item');
+          el.style.animation = 'none';
+          el.style.opacity = '1';
+          el.style.transform = '';
+        }, delay + animDuration + 50);
+      });
+    }, 15);
+  }
+
+  function forceInstantLogout(msg) {
+    STATE.token = '';
+    STATE.user = null;
+    STATE.isPreloaded = false;
+    STATE.isPreviewMode = false;
+    STATE.notifications = [];
+    STATE.unreadNotifCount = 0;
+    STATE.dashboardCache = null;
+    STATE.settingsCache = null;
+    STATE.dataStore = { tools: {}, courses: {}, community: {}, websites: {}, accessWebs: {}, bonuses: {}, karyaMembers: {}, members: {} };
+    
+    localStorage.removeItem('WHYDEV_TOKEN');
+    localStorage.removeItem('WHYDEV_LAST_VIEW');
+    
+    if (window.heartbeatInterval) clearInterval(window.heartbeatInterval);
+    if (window.sidebarClockInterval) clearInterval(window.sidebarClockInterval);
+    if (window.lpSocialProofInterval) clearInterval(window.lpSocialProofInterval);
+    if (window.lpSocialProofTimeout) clearTimeout(window.lpSocialProofTimeout);
+    
+    hideLoading();
+    showToast(msg || 'Akun Anda telah dinonaktifkan oleh Admin.', 'error');
+    renderView('login');
+  }
+
+  function runBackend(functionName) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return new Promise(function(resolve, reject) {
+    var runner = google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.success === false && res.message) {
+          var lower = String(res.message).toLowerCase();
+          if (lower.includes('nonaktif') || lower.includes('sesi') || lower.includes('berakhir') || lower.includes('ditolak') || lower.includes('akun_nonaktif')) {
+            forceInstantLogout(res.message.replace('AKUN_NONAKTIF: ', ''));
+            return resolve(res);
+          }
+        }
+        resolve(res);
+      })
+      .withFailureHandler(function(err) {
+        if (err && err.message) {
+          var lower = String(err.message).toLowerCase();
+          if (lower.includes('nonaktif') || lower.includes('sesi') || lower.includes('berakhir') || lower.includes('ditolak') || lower.includes('akun_nonaktif')) {
+            forceInstantLogout(err.message.replace('AKUN_NONAKTIF: ', ''));
+          }
+        }
+        reject(err);
+      });
+
+    if (typeof runner[functionName] === 'function') {
+      runner[functionName].apply(runner, args);
+    } else {
+      reject(new Error('Fungsi backend "' + functionName + '" tidak ditemukan di Code.gs. Pastikan skrip sudah di-save dan di-deploy ulang.'));
+    }
+  });
+}
+
+  function startHeartbeat() {
+    if (window.heartbeatInterval) clearInterval(window.heartbeatInterval);
+    function sendPing() {
+      if (STATE.token && STATE.user) {
+        runBackend('pingHeartbeat', STATE.token).then(function(res) {
+          if (res && !res.success) {
+            forceInstantLogout(res.message);
+          } else if (res && typeof res.unreadNotif !== 'undefined') {
+            STATE.unreadNotifCount = res.unreadNotif;
+            var dot = document.getElementById('notifBadgeDot');
+            if (dot) {
+              if (STATE.unreadNotifCount > 0) dot.classList.add('show');
+              else dot.classList.remove('show');
+            }
+          }
+        }).catch(function(err) {
+          if (err && err.message) forceInstantLogout(err.message);
+        });
+      }
+    }
+    sendPing();
+    window.heartbeatInterval = setInterval(sendPing, 15000);
+  }
+
+  function preloadAllData() {
+    if (!STATE.token) return;
+    runBackend('getAllPortalData', STATE.token).then(function(res) {
+      if (res && res.success && res.data) {
+        ['tools', 'courses', 'community', 'websites', 'accessWebs', 'bonuses', 'karyaMembers'].forEach(function(key) {
+          STATE.dataStore[key] = {};
+          (res.data[key] || []).forEach(function(item) {
+            STATE.dataStore[key][item.ID] = item;
+          });
+        });
+        STATE.isPreloaded = true;
+      }
+    });
+
+    if (STATE.user && STATE.user.role === 'ADMIN') {
+      runBackend('getMembers', STATE.token).then(function(res) {
+        if (res && res.success) {
+          STATE.dataStore.members = {};
+          (res.data || []).forEach(function(item) { STATE.dataStore.members[item.id] = item; });
+        }
+      });
+    }
+
+    loadNotifications();
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var crudModalEl = document.getElementById('crudModal');
+    var videoModalEl = document.getElementById('videoModal');
+    var allNotifModalEl = document.getElementById('allNotifModal');
+    var announcementModalEl = document.getElementById('announcementModal');
+
+    if (crudModalEl) crudModalInstance = new bootstrap.Modal(crudModalEl);
+    if (videoModalEl) videoModalInstance = new bootstrap.Modal(videoModalEl);
+    if (allNotifModalEl) allNotifModalInstance = new bootstrap.Modal(allNotifModalEl);
+    if (announcementModalEl) announcementModalInstance = new bootstrap.Modal(announcementModalEl);
+
+    showLoading(true);
+    var savedView = localStorage.getItem('WHYDEV_LAST_VIEW') || 'landing';
+
+    runBackend('getInitialAppData', STATE.token)
+      .then(function(res) {
+        hideLoading();
+        if (res.success) {
+          if (res.settings) {
+            for (var k in res.settings) STATE.settings[k] = res.settings[k];
+            STATE.settingsCache = res.settings;
+          }
+
+          if (!localStorage.getItem('WHYDEV_THEME') && STATE.settings.default_theme) {
+            STATE.theme = STATE.settings.default_theme;
+          }
+          applyTheme(STATE.theme);
+
+          if (res.user) {
+            STATE.user = res.user;
+            if (res.dashboard && res.dashboard.success) {
+              STATE.dashboardCache = res.dashboard;
+            }
+            var targetView = (savedView && savedView !== 'landing' && savedView !== 'login') ? savedView : 'dashboard';
+            renderView(targetView);
+            preloadAllData();
+            startHeartbeat();
+          } else {
+            STATE.token = '';
+            localStorage.removeItem('WHYDEV_TOKEN');
+            if (res.landingData) STATE.landingData = res.landingData;
+            var targetView = (savedView === 'login') ? 'login' : 'landing';
+            renderView(targetView);
+          }
+        } else {
+          applyTheme(STATE.theme);
+          renderView('landing');
+        }
+      })
+      .catch(function() {
+        hideLoading();
+        applyTheme(STATE.theme);
+        renderView('landing');
+      });
+  });
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('WHYDEV_THEME', theme);
+    STATE.theme = theme;
+    
+    var btns = document.querySelectorAll('.theme-toggle-btn');
+    btns.forEach(function(btn) {
+      btn.innerHTML = theme === 'dark' ? '<i class="bi bi-sun-fill text-warning"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
+    });
+    var themeMenuItems = document.querySelectorAll('.theme-menu-toggle');
+    themeMenuItems.forEach(function(item) {
+      item.innerHTML = '<i class="bi ' + (theme === 'dark' ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill') + ' fs-5"></i><span class="fw-semibold">' + (theme === 'dark' ? 'Mode Terang' : 'Mode Gelap') + '</span>';
+    });
+  }
+
+  function toggleTheme() {
+    applyTheme(STATE.theme === 'light' ? 'dark' : 'light');
+  }
+
+  function togglePreviewMode() {
+    STATE.isPreviewMode = !STATE.isPreviewMode;
+    showToast(STATE.isPreviewMode ? 'Masuk ke Mode Pratinjau Member' : 'Kembali ke Mode Admin', 'success');
+    if (STATE.isPreviewMode && (STATE.currentView === 'members' || STATE.currentView === 'settings')) {
+      STATE.currentView = 'dashboard';
+    }
+    renderView(STATE.currentView);
+  }
+
+  function renderBrandLogo() {
+    if (STATE.settings.logo_url) {
+      return '<img src="' + getValidImage(STATE.settings.logo_url, '') + '" class="brand-logo-img" alt="Logo">';
+    }
+    return '<div class="brand-logo-box"><i class="bi bi-code-slash"></i></div>';
+  }
+
+  function showLoading(isFull) {
+    var loader = document.getElementById('globalAppLoader');
+    if (!loader) {
+      loader = document.createElement('div');
+      loader.id = 'globalAppLoader';
+      loader.className = 'app-loading-overlay';
+      loader.innerHTML = '<div class="simple-spinner"></div>';
+    }
+
+    var container = document.getElementById('mainContent');
+    if (isFull || !container || STATE.currentView === 'landing' || STATE.currentView === 'login') {
+      loader.classList.add('fullscreen');
+      document.body.appendChild(loader);
+    } else {
+      loader.classList.remove('fullscreen');
+      container.appendChild(loader);
+    }
+
+    loader.classList.add('show');
+  }
+
+  function hideLoading() {
+    var loader = document.getElementById('globalAppLoader');
+    if (loader) {
+      loader.classList.remove('show');
+      if (loader.parentNode) {
+        loader.parentNode.removeChild(loader);
+      }
+    }
+  }
+
+  function askSendNotification() {
+    return new Promise(function(resolve) {
+      var old = document.getElementById('whydevConfirmOverlay');
+      if (old) old.remove();
+      var overlay = document.createElement('div');
+      overlay.id = 'whydevConfirmOverlay';
+      overlay.className = 'whydev-confirm-overlay';
+      overlay.innerHTML = '<div class="whydev-confirm-card" role="dialog" aria-modal="true" aria-labelledby="whyConfirmTitle">' +
+        '<div class="whydev-confirm-icon"><i class="bi bi-bell-fill"></i></div>' +
+        '<h5 id="whyConfirmTitle" class="fw-bold mb-2">Kirim Notifikasi ke Member?</h5>' +
+        '<p class="text-muted small mb-4">Konten baru berhasil disiapkan. Apakah kamu ingin mengirim pemberitahuan kepada seluruh member Why Dev?</p>' +
+        '<div class="d-flex gap-2 justify-content-center"><button type="button" class="btn btn-outline-secondary px-4" data-choice="no">Tidak, Lewati</button><button type="button" class="btn btn-primary-custom px-4" data-choice="yes"><i class="bi bi-bell me-1"></i>Ya, Kirim</button></div>' +
+        '</div>';
+      function onEscape(ev) {
+        if (ev.key === 'Escape' && document.getElementById('whydevConfirmOverlay')) finish(false);
+      }
+      function finish(value) {
+        document.removeEventListener('keydown', onEscape);
+        overlay.remove();
+        resolve(value);
+      }
+      overlay.addEventListener('click', function(ev) {
+        if (ev.target === overlay) finish(false);
+        var choice = ev.target.closest('[data-choice]');
+        if (choice) finish(choice.getAttribute('data-choice') === 'yes');
+      });
+      document.addEventListener('keydown', onEscape);
+      document.body.appendChild(overlay);
+    });
+  }
+
+  function showToast(message, type) {
+    var container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.className = 'toast-container-custom position-fixed p-2';
+      container.style.zIndex = '99999';
+      document.body.appendChild(container);
+    }
+
+    var toastId = 'toast_' + Date.now();
+    var bgClass = type === 'error' ? 'bg-danger' : 'bg-success';
+    var html = '<div id="' + toastId + '" class="toast align-items-center text-white ' + bgClass + ' border-0 show" role="alert">' +
+      '<div class="d-flex">' +
+        '<div class="toast-body fw-semibold small">' + message + '</div>' +
+        '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>' +
+      '</div>' +
+    '</div>';
+    container.insertAdjacentHTML('beforeend', html);
+    setTimeout(function() {
+      var el = document.getElementById(toastId);
+      if (el) el.remove();
+    }, 4000);
+  }
+
+  function loadSettings(cb) {
+    runBackend('getSettings')
+      .then(function(res) {
+        if (res && res.success && res.data) {
+          for (var k in res.data) STATE.settings[k] = res.data[k];
+          STATE.settingsCache = res.data;
+          if (!localStorage.getItem('WHYDEV_THEME') && STATE.settings.default_theme) {
+            applyTheme(STATE.settings.default_theme);
+          }
+        }
+        if (cb) cb();
+      })
+      .catch(function() { if (cb) cb(); });
+  }
+
+  function getImageSource(fileId, linkId, fallbackValue, required) {
+    var fileInput = document.getElementById(fileId);
+    var linkInput = document.getElementById(linkId);
+    var hasFile = fileInput && fileInput.files && fileInput.files[0];
+    var linkValue = linkInput ? String(linkInput.value || '').trim() : '';
+    if (hasFile) return readImageFile(fileId, fallbackValue || '');
+    if (linkValue) return Promise.resolve(linkValue);
+    if (fallbackValue) return Promise.resolve(fallbackValue);
+    if (required) return Promise.reject(new Error('Silakan pilih file gambar atau masukkan link gambar terlebih dahulu.'));
+    return Promise.resolve('');
+  }
+
+  function syncImageSource(fileId, linkId, textId, mode) {
+    var fileInput = document.getElementById(fileId);
+    var linkInput = document.getElementById(linkId);
+    var text = document.getElementById(textId);
+    if (mode === 'file') {
+      if (linkInput) linkInput.value = '';
+      if (text) text.textContent = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0].name : 'Belum ada file dipilih';
+    } else if (mode === 'link') {
+      if (linkInput && String(linkInput.value || '').trim() && fileInput) fileInput.value = '';
+      if (text && (!fileInput || !fileInput.files || !fileInput.files[0])) text.textContent = 'Belum ada file dipilih';
+    }
+  }
+
+  function openStyledFilePicker(fileId) {
+    var input = document.getElementById(fileId);
+    if (input) input.click();
+  }
+
+  function readImageFile(inputId, fallbackValue) {
+    return new Promise(function(resolve, reject) {
+      var input = document.getElementById(inputId);
+      if (!input || !input.files || !input.files[0]) {
+        resolve(fallbackValue || '');
+        return;
+      }
+      var file = input.files[0];
+      if (!file.type || file.type.indexOf('image/') !== 0) {
+        reject(new Error('File yang dipilih harus berupa gambar.'));
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result); };
+      reader.onerror = function() { reject(new Error('Gagal membaca file gambar.')); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function imageFileChangeText(inputId, textId) {
+    var input = document.getElementById(inputId);
+    var text = document.getElementById(textId);
+    if (!input || !text) return;
+    text.textContent = input.files && input.files[0] ? input.files[0].name : 'Belum ada file dipilih';
+  }
+
+  document.addEventListener('load', function(e) {
+    if (e.target && e.target.tagName === 'IMG' && e.target.closest('.card-img-wrapper')) {
+      e.target.classList.add('img-loaded');
+    }
+  }, true);
+
+  /* LOGIKA NOTIFIKASI FRONTEND */
+  function loadNotifications(cb) {
+    if (!STATE.token) return;
+    runBackend('getNotifications', STATE.token).then(function(res) {
+      if (res && res.success) {
+        STATE.notifications = res.data || [];
+        STATE.unreadNotifCount = res.unreadCount || 0;
+        
+        var dot = document.getElementById('notifBadgeDot');
+        if (dot) {
+          if (STATE.unreadNotifCount > 0) dot.classList.add('show');
+          else dot.classList.remove('show');
+        }
+
+        renderNotificationDropdown();
+        if (cb) cb();
+      }
+    });
+  }
+
+  function getNotificationIconColor(item) {
+    var key = String((item && item.targetUrl) || '').trim();
+    var map = {
+      dashboard: 'notif-color-dashboard',
+      courses: 'notif-color-courses',
+      tools: 'notif-color-tools',
+      websites: 'notif-color-websites',
+      accessWebs: 'notif-color-access',
+      bonuses: 'notif-color-bonus',
+      community: 'notif-color-community',
+      karyaMembers: 'notif-color-karya',
+      members: 'notif-color-members',
+      settings: 'notif-color-settings'
+    };
+    return map[key] || 'notif-color-dashboard';
+  }
+
+  function cleanNotificationTitle(title) {
+    return String(title || '').replace(/^\s*(?:Tutorial Baru|Bonus Baru|Akses Web Baru|Tool Baru|Tools Baru|Pengumuman Baru)\s*:\s*/i, '').trim();
+  }
+
+  function renderNotificationDropdown() {
+    var container = document.getElementById('notifDropdownList');
+    if (!container) return;
+
+    var list = STATE.notifications.slice(0, 5); // Tampilkan 5 terbaru saja
+    if (list.length === 0) {
+      container.innerHTML = '<div class="p-3 text-center text-muted small"><i class="bi bi-bell-slash fs-4 d-block mb-1"></i>Belum ada notifikasi</div>';
+      return;
+    }
+
+    container.innerHTML = list.map(function(item) {
+      var unreadClass = item.isRead ? '' : 'unread';
+      var icon = item.iconClass || 'bi bi-bell-fill';
+      var iconColor = getNotificationIconColor(item);
+      var title = cleanNotificationTitle(item.title);
+      var date = item.createdAt ? String(item.createdAt).split(' ')[0] : '';
+
+      return '<div class="notif-item ' + unreadClass + '" onclick="handleMarkRead(\'' + item.id + '\', \'' + item.targetUrl + '\')">' +
+        '<div class="notif-icon-box ' + iconColor + '"><i class="' + icon + '"></i></div>' +
+        '<div class="min-w-0 flex-grow-1 notif-content">' +
+          '<div class="fw-bold small notif-title" title="' + title + '">' + title + '</div>' +
+          '<div class="notif-message-row">' +
+            '<div class="text-muted small notif-message">' + item.message + '</div>' +
+            '<span class="text-muted notif-date">' + date + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function openAllNotifModal() {
+    /* Close the notification preview first, especially on mobile, then show the full list in the centered modal. */
+    var openMenu = document.querySelector('.notif-dropdown-menu.show');
+    if (openMenu) {
+      var toggle = openMenu.parentElement ? openMenu.parentElement.querySelector('.notif-btn') : null;
+      try {
+        if (toggle && window.bootstrap && bootstrap.Dropdown) {
+          var dropdownInstance = bootstrap.Dropdown.getInstance(toggle) || bootstrap.Dropdown.getOrCreateInstance(toggle);
+          dropdownInstance.hide();
+        }
+      } catch (e) {}
+      openMenu.classList.remove('show');
+      if (openMenu.parentElement) openMenu.parentElement.classList.remove('show');
+    }
+
+    var modalBody = document.getElementById('allNotifModalBody');
+    if (!modalBody) return;
+
+    if (STATE.notifications.length === 0) {
+      modalBody.innerHTML = '<div class="p-4 text-center text-muted small"><i class="bi bi-bell-slash fs-2 d-block mb-2"></i>Belum ada notifikasi yang tersimpan.</div>';
+    } else {
+      modalBody.innerHTML = STATE.notifications.map(function(item) {
+        var unreadClass = item.isRead ? '' : 'unread';
+        var icon = item.iconClass || 'bi bi-bell-fill';
+        var iconColor = getNotificationIconColor(item);
+
+        var title = cleanNotificationTitle(item.title);
+        return '<div class="notif-item ' + unreadClass + '" onclick="handleMarkRead(\'' + item.id + '\', \'' + item.targetUrl + '\')">' +
+          '<div class="notif-icon-box ' + iconColor + '"><i class="' + icon + '"></i></div>' +
+          '<div class="min-w-0 flex-grow-1 notif-content">' +
+            '<div class="fw-bold small notif-title" title="' + title + '">' + title + '</div>' +
+            '<div class="notif-message-row">' +
+              '<div class="text-muted small notif-message notif-message-full">' + item.message + '</div>' +
+              '<span class="text-muted notif-date">' + (item.createdAt || '') + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    if (allNotifModalInstance) allNotifModalInstance.show();
+  }
+
+  function handleMarkRead(notifId, targetUrl) {
+    var item = STATE.notifications.find(function(n) { return String(n.id) === String(notifId); });
+    if (item) item.isRead = true;
+    STATE.unreadNotifCount = STATE.notifications.filter(function(n) { return !n.isRead; }).length;
+    var dot = document.getElementById('notifBadgeDot');
+    if (dot) dot.classList.toggle('show', STATE.unreadNotifCount > 0);
+    renderNotificationDropdown();
+
+    runBackend('markNotificationAsRead', STATE.token, notifId).then(function() {
+      loadNotifications();
+      if (allNotifModalInstance) allNotifModalInstance.hide();
+      if (targetUrl) {
+        switchNav(targetUrl);
+      }
+    });
+  }
+
+  function handleMarkAllRead() {
+    runBackend('markAllNotificationsAsRead', STATE.token).then(function(res) {
+      if (res && res.success) {
+        showToast(res.message);
+        loadNotifications(function() {
+          if (document.getElementById('allNotifModal').classList.contains('show')) {
+            openAllNotifModal();
+          }
+        });
+      }
+    });
+  }
+
+  function openAnnouncementModal() {
+    if (announcementModalInstance) announcementModalInstance.show();
+  }
+
+  function handleSaveAnnouncement(e) {
+    e.preventDefault();
+    var title = document.getElementById('annTitle').value;
+    var message = document.getElementById('annMessage').value;
+
+    showLoading(false);
+    if (announcementModalInstance) announcementModalInstance.hide();
+
+    runBackend('addAnnouncement', STATE.token, { title: title, message: message }).then(function(res) {
+      hideLoading();
+      if (res && res.success) {
+        showToast(res.message);
+        document.getElementById('announcementForm').reset();
+        loadNotifications();
+      } else {
+        showToast(res ? res.message : 'Gagal mengirim pengumuman', 'error');
+      }
+    }).catch(function(err) {
+      hideLoading();
+      showToast(err.message || 'Terjadi kesalahan sistem', 'error');
+    });
+  }
+
+  function renderView(viewName) {
+    if (window.lpSocialProofInterval) clearInterval(window.lpSocialProofInterval);
+    if (window.lpSocialProofTimeout) clearTimeout(window.lpSocialProofTimeout);
+
+    if ((STATE.isPreviewMode || (STATE.user && STATE.user.role !== 'ADMIN')) && (viewName === 'members' || viewName === 'settings')) {
+      viewName = 'dashboard';
+    }
+
+    STATE.currentView = viewName;
+    localStorage.setItem('WHYDEV_LAST_VIEW', viewName);
+
+    var root = document.getElementById('appRoot');
+
+    if (viewName === 'landing') {
+      document.body.classList.remove('has-preview-banner', 'whydev-compact-ui', 'whydev-login-compact');
+      root.innerHTML = renderLandingPage();
+      applyTheme(STATE.theme);
+      setTimeout(function() {
+        if (typeof initStarNetworkCanvas === 'function') initStarNetworkCanvas();
+        if (typeof initScrollAnimation === 'function') initScrollAnimation();
+        if (typeof initDynamicSocialProof === 'function') initDynamicSocialProof();
+      }, 50);
+      return;
+    }
+
+    if (viewName === 'login') {
+      document.body.classList.remove('has-preview-banner', 'whydev-compact-ui');
+      document.body.classList.add('whydev-login-compact');
+      root.innerHTML = renderLoginPage();
+      applyTheme(STATE.theme);
+      setTimeout(function() {
+        initStarNetworkCanvas();
+      }, 50);
+      return;
+    }
+
+    document.body.classList.toggle('has-preview-banner', STATE.isPreviewMode);
+    document.body.classList.remove('whydev-login-compact');
+    document.body.classList.add('whydev-compact-ui');
+
+    var previewBannerHtml = STATE.isPreviewMode ? 
+      '<div class="preview-mode-banner">' +
+        '<span><i class="bi bi-eye-fill me-2"></i>Anda sedang melihat tampilan sebagai Member (Mode Pratinjau)</span>' +
+        '<button type="button" class="btn btn-sm btn-preview-exit fw-semibold text-nowrap ms-auto" onclick="togglePreviewMode()"><i class="bi bi-eye-slash-fill me-1"></i>Keluar Pratinjau</button>' +
+      '</div>' : '';
+
+    root.innerHTML = previewBannerHtml + '<div class="app-layout">' +
+      renderSidebar() +
+      '<div class="app-main">' +
+        renderHeader() +
+        '<div class="content-container" id="mainContent"></div>' +
+        '<footer class="app-footer">' + (STATE.settings.footer_text || '© 2026 Why Dev. All Rights Reserved.') + '</footer>' +
+      '</div>' +
+    '</div>';
+
+    applyTheme(STATE.theme);
+    startClocks();
+    loadViewContent(viewName);
+    loadNotifications();
+  }
+
+  function startClocks() {
+    if (window.sidebarClockInterval) clearInterval(window.sidebarClockInterval);
+    function tick() {
+      var now = new Date();
+      var timeStr = String(now.getHours()).padStart(2, '0') + ':' + 
+                    String(now.getMinutes()).padStart(2, '0') + ':' + 
+                    String(now.getSeconds()).padStart(2, '0');
+      
+      var headerTimeEl = document.getElementById('headerTime');
+      if (headerTimeEl) headerTimeEl.innerText = timeStr;
+    }
+    tick();
+    window.sidebarClockInterval = setInterval(tick, 1000);
+  }
+
+  function filterItemsByPreview(items) {
+    if (!Array.isArray(items)) return [];
+    if (STATE.user && STATE.user.role === 'ADMIN' && !STATE.isPreviewMode) {
+      return items;
+    }
+    var currentUserId = STATE.user ? String(STATE.user.id || STATE.user.ID || '') : '';
+    return items.filter(function(i) {
+      if (!i) return false;
+      var st = String(i.Status || i.status || '').toUpperCase();
+      var itemUserId = String(i.UserID || i.userId || i.userID || i.userid || '');
+      var isOwner = currentUserId && itemUserId === currentUserId;
+      return isOwner || st === 'APPROVED' || st === 'PUBLIC' || st === 'ACTIVE';
+    });
+  }
+
+  function loadViewContent(view) {
+    var container = document.getElementById('mainContent');
+
+    if ((STATE.isPreviewMode || (STATE.user && STATE.user.role !== 'ADMIN')) && (view === 'members' || view === 'settings')) {
+      view = 'dashboard';
+      STATE.currentView = 'dashboard';
+    }
+
+    var viewsMap = {
+      courses: { render: renderCoursesView, key: 'courses', backendFn: 'getCourses' },
+      tools: { render: renderToolsView, key: 'tools', backendFn: 'getTools' },
+      websites: { render: renderWebsitesView, key: 'websites', backendFn: 'getWebsites' },
+      accessWebs: { render: renderAccessWebsView, key: 'accessWebs', backendFn: 'getAccessWebs' },
+      bonuses: { render: renderBonusesView, key: 'bonuses', backendFn: 'getBonuses' },
+      community: { render: renderCommunityView, key: 'community', backendFn: 'getCommunity' },
+      karyaMembers: { render: renderKaryaMemberView, key: 'karyaMembers', backendFn: 'getKaryaMembers' }
+    };
+
+    if (viewsMap[view]) {
+      var storeKey = viewsMap[view].key;
+      var cachedItems = Object.values(STATE.dataStore[storeKey] || {});
+
+      if (cachedItems.length > 0) {
+        hideLoading();
+        container.innerHTML = '<div class="fade-in-content">' + viewsMap[view].render(filterItemsByPreview(cachedItems)) + '</div>';
+        applyStaggerAnimation();
+        
+        runBackend(viewsMap[view].backendFn, STATE.token).then(function(res) {
+          if (res && res.success && Array.isArray(res.data)) {
+            STATE.dataStore[storeKey] = {};
+            res.data.forEach(function(item) {
+              var itemId = item.ID || item.id || ('KRY_' + Math.random());
+              STATE.dataStore[storeKey][itemId] = item;
+            });
+          }
+        }).catch(function(){});
+        return;
+      }
+
+      showLoading(false);
+      runBackend(viewsMap[view].backendFn, STATE.token).then(function(res) {
+        hideLoading();
+        if (res && res.success) {
+          STATE.dataStore[storeKey] = {};
+          (res.data || []).forEach(function(item) {
+            var itemId = item.ID || item.id || ('KRY_' + Math.random());
+            STATE.dataStore[storeKey][itemId] = item;
+          });
+          container.innerHTML = '<div class="fade-in-content">' + viewsMap[view].render(filterItemsByPreview(res.data || [])) + '</div>';
+          applyStaggerAnimation();
+        } else {
+          container.innerHTML = '<div class="card-custom p-4 text-center my-4"><i class="bi bi-exclamation-triangle text-warning fs-1 mb-2"></i><h5 class="fw-bold">Gagal Memuat Data</h5><p class="text-muted small mb-0">' + (res ? res.message : 'Terjadi kesalahan sistem') + '</p></div>';
+        }
+      }).catch(function(err) {
+        hideLoading();
+        container.innerHTML = '<div class="card-custom p-4 text-center my-4"><i class="bi bi-wifi-off text-danger fs-1 mb-2"></i><h5 class="fw-bold">Koneksi Terputus</h5><p class="text-muted small mb-0">' + (err.message || 'Tidak dapat terhubung ke server') + '</p></div>';
+      });
+      return;
+    }
+
+    if (view === 'dashboard') {
+      if (STATE.dashboardCache) {
+        hideLoading();
+        container.innerHTML = '<div class="fade-in-content">' + renderDashboardView(STATE.dashboardCache) + '</div>';
+        applyStaggerAnimation();
+        runBackend('getDashboardData', STATE.token).then(function(res) {
+          if (res && res.success) STATE.dashboardCache = res;
+        });
+        return;
+      }
+
+      showLoading(false);
+      runBackend('getDashboardData', STATE.token).then(function(res) {
+        hideLoading();
+        if (res && res.success) {
+          STATE.dashboardCache = res;
+          container.innerHTML = '<div class="fade-in-content">' + renderDashboardView(res) + '</div>';
+          applyStaggerAnimation();
+          preloadAllData();
+        }
+      }).catch(function() { hideLoading(); });
+
+    } else if (view === 'members') {
+      var cachedMembers = Object.values(STATE.dataStore.members || {});
+      if (cachedMembers.length > 0) {
+        hideLoading();
+        container.innerHTML = '<div class="fade-in-content">' + renderMembersView(cachedMembers) + '</div>';
+        applyStaggerAnimation();
+        runBackend('getMembers', STATE.token).then(function(res) {
+          if (res && res.success) {
+            STATE.dataStore.members = {};
+            (res.data || []).forEach(function(item) { STATE.dataStore.members[item.id] = item; });
+          }
+        });
+        return;
+      }
+
+      showLoading(false);
+      runBackend('getMembers', STATE.token).then(function(res) {
+        hideLoading();
+        if (res && res.success) {
+          STATE.dataStore.members = {};
+          (res.data || []).forEach(function(item) { STATE.dataStore.members[item.id] = item; });
+          container.innerHTML = '<div class="fade-in-content">' + renderMembersView(res.data || []) + '</div>';
+          applyStaggerAnimation();
+        }
+      }).catch(function() { hideLoading(); });
+
+    } else if (view === 'settings') {
+      if (STATE.settingsCache) {
+        hideLoading();
+        container.innerHTML = '<div class="fade-in-content">' + renderSettingsView(STATE.settingsCache) + '</div>';
+        applyStaggerAnimation();
+        runBackend('getSettings').then(function(resSettings) {
+          if (resSettings && resSettings.success) STATE.settingsCache = resSettings.data;
+        });
+        return;
+      }
+
+      showLoading(false);
+      runBackend('getSettings')
+        .then(function(resSettings) {
+          hideLoading();
+          if (resSettings && resSettings.success) {
+            STATE.settingsCache = resSettings.data;
+            container.innerHTML = '<div class="fade-in-content">' + renderSettingsView(resSettings.data) + '</div>';
+            applyStaggerAnimation();
+          }
+        })
+        .catch(function() { hideLoading(); });
+    } else if (view === 'profile') {
+      hideLoading();
+      container.innerHTML = '<div class="fade-in-content">' + renderProfileView() + '</div>';
+      applyStaggerAnimation();
+    }
+  }
+
+  function renderLoginPage() {
+    return '<div class="min-vh-100 d-flex align-items-center justify-content-center p-3 position-relative login-mobile-container" style="background: radial-gradient(circle at center, var(--primary-light), var(--bg-main)); overflow: hidden;">' +
+      '<canvas id="starNetworkCanvas" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0;"></canvas>' +
+      '<div class="position-absolute top-0 end-0 m-3" style="z-index: 2;">' +
+        '<button class="theme-toggle-btn" onclick="toggleTheme()"><i class="bi bi-moon-stars-fill"></i></button>' +
+      '</div>' +
+      '<div class="card-custom login-card-mobile position-relative" style="max-width: 420px; width: 100%; z-index: 2;">' +
+        '<div class="text-center mb-4">' +
+          '<div class="fw-bold fs-4 text-primary mb-2 d-flex align-items-center justify-content-center gap-2">' + renderBrandLogo() + '<span>' + (STATE.settings.site_name || 'WHY DEV') + '</span></div>' +
+          '<p class="text-muted small mb-0" style="font-size: 0.85rem;">Login untuk mengakses Portal Member </p>' +
+        '</div>' +
+        '<form id="loginForm" onsubmit="handleLogin(event)">' +
+          '<div class="mb-3">' +
+            '<label class="form-label small fw-bold">Email</label>' +
+            '<input type="email" id="loginUsername" class="form-control" placeholder="Masukkan email" required style="height: 46px;">' +
+          '</div>' +
+          '<div class="mb-4">' +
+            '<label class="form-label small fw-bold">Password</label>' +
+            '<div class="password-input-wrapper">' +
+              '<input type="password" id="loginPassword" class="form-control" placeholder="Masukkan password" required style="height: 46px; padding-right: 48px;">' +
+              '<button type="button" class="password-toggle-inside" onclick="togglePasswordVisibility(\'loginPassword\', this)"><i class="bi bi-eye"></i></button>' +
+            '</div>' +
+          '</div>' +
+          '<button type="submit" id="loginSubmitBtn" class="btn btn-primary-custom w-100 mb-2 fs-6" style="height: 38px !important; min-height: 38px !important; padding: 0 16px !important; line-height: 38px !important;">Login Portal</button>' +
+          '<button type="button" class="btn btn-link btn-hover-animate text-decoration-none w-100 text-muted p-0 py-1" style="font-size: 0.85rem;" onclick="renderView(\'landing\')"><i class="bi bi-arrow-left me-1 animated-icon"></i>Kembali ke Halaman Utama</button>' +
+        '</form>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function togglePasswordVisibility(inputId, btn) {
+    var input = document.getElementById(inputId);
+    var icon = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'bi bi-eye-slash';
+    } else {
+      input.type = 'password';
+      icon.className = 'bi bi-eye';
+    }
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    var u = document.getElementById('loginUsername').value;
+    var p = document.getElementById('loginPassword').value;
+    var loginBtn = document.getElementById('loginSubmitBtn');
+
+    if (loginBtn) {
+      loginBtn.disabled = true;
+      loginBtn.dataset.originalHtml = loginBtn.innerHTML;
+      loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
+    }
+
+    runBackend('login', u, p, 'Web Browser')
+      .then(function(res) {
+        if (res.success) {
+          STATE.token = res.token;
+          STATE.user = res.user;
+          localStorage.setItem('WHYDEV_TOKEN', res.token);
+          showToast('Login berhasil! Selamat datang ' + res.user.nama, 'success');
+          renderView('dashboard');
+          preloadAllData();
+          startHeartbeat();
+        } else {
+          if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = loginBtn.dataset.originalHtml || 'Login Portal';
+          }
+          showToast(res.message, 'error');
+        }
+      })
+      .catch(function(err) {
+        if (loginBtn) {
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = loginBtn.dataset.originalHtml || 'Login Portal';
+        }
+        showToast(err.message || 'Terjadi kesalahan sistem', 'error');
+      });
+  }
+  function handleLogout() {
+    showLoading(true);
+    runBackend('logout', STATE.token)
+      .then(function() {
+        forceInstantLogout('Logout berhasil.');
+      })
+      .catch(function() {
+        forceInstantLogout('Logout selesai.');
+      });
+  }
+
+  function openAddChoiceModal() {
+    if (!STATE.user || STATE.user.role !== 'ADMIN' || STATE.isPreviewMode) return;
+
+    var crudModal = document.getElementById('crudModal');
+    if (crudModal) crudModal.classList.add('add-choice-active');
+    document.getElementById('crudModalTitle').innerText = 'Tambah Konten';
+    document.getElementById('crudModalBody').innerHTML =
+      '<div class="add-choice-grid">' +
+        '<button type="button" class="add-choice-item" onclick="selectAddType(\'courses\')"><i class="bi bi-play-btn-fill icon-courses"></i><span>Akses Tutorial</span></button>' +
+        '<button type="button" class="add-choice-item" onclick="selectAddType(\'tools\')"><i class="bi bi-tools icon-tools"></i><span>Akses Tools</span></button>' +
+        '<button type="button" class="add-choice-item" onclick="selectAddType(\'websites\')"><i class="bi bi-layout-text-window-reverse icon-websites"></i><span>Contoh Web</span></button>' +
+        '<button type="button" class="add-choice-item" onclick="selectAddType(\'accessWebs\')"><i class="bi bi-key-fill icon-access"></i><span>Hak Akses Web</span></button>' +
+        '<button type="button" class="add-choice-item" onclick="selectAddType(\'bonuses\')"><i class="bi bi-gift-fill icon-bonus"></i><span>Bonus Gratis</span></button>' +
+        '<button type="button" class="add-choice-item" onclick="selectAddType(\'community\')"><i class="bi bi-people-fill icon-community"></i><span>Komunitas</span></button>' +
+        '<button type="button" class="add-choice-item" onclick="selectAddType(\'karyaMembers\')"><i class="bi bi-rocket-takeoff-fill icon-karya"></i><span>Karya Member</span></button>' +
+        '<button type="button" class="add-choice-item" onclick="selectAddType(\'members\')"><i class="bi bi-people-fill icon-members"></i><span>Kelola Member</span></button>' +
+      '</div>';
+    crudModalInstance.show();
+  }
+
+  function selectAddType(type) {
+    if (!STATE.user || STATE.user.role !== 'ADMIN' || STATE.isPreviewMode) return;
+
+    // Tetap gunakan instance crudModal yang sama. Jangan hide() lalu show()
+    // kembali karena Bootstrap dapat menghapus backdrop lama saat backdrop baru
+    // sedang dibuat, sehingga form berikutnya tampil tanpa overlay gelap.
+    var crudModal = document.getElementById('crudModal');
+    if (crudModal) crudModal.classList.remove('add-choice-active');
+
+    switch (type) {
+      case 'courses': openCourseModal(); break;
+      case 'tools': openToolModal(); break;
+      case 'websites': openWebsiteModal(); break;
+      case 'accessWebs': openAccessWebModal(); break;
+      case 'bonuses': openBonusModal(); break;
+      case 'community': openCommunityModal(); break;
+      case 'karyaMembers': openKaryaMemberModal(); break;
+      case 'members': openAddMemberModal(); break;
+    }
+  }
+
+  function renderSidebar() {
+    var u = STATE.user || {};
+    var isAdmin = u.role === 'ADMIN' && !STATE.isPreviewMode;
+
+    return '<aside class="app-sidebar" id="appSidebar">' +
+      '<div class="sidebar-brand">' + renderBrandLogo() + '<span>' + (STATE.settings.site_name || 'WHY DEV') + '</span></div>' +
+      '<div class="sidebar-menu">' +
+        (isAdmin ? '<div class="admin-add-action-wrap"><button type="button" class="admin-add-action-btn" onclick="openAddChoiceModal()"><i class="bi bi-plus-lg me-2"></i>Tambah</button></div>' : '') +
+        '<div role="button" class="nav-link-custom ' + (STATE.currentView === 'dashboard' ? 'active' : '') + '" onclick="switchNav(\'dashboard\')"><i class="bi bi-grid-1x2-fill icon-dashboard"></i>Dashboard</div>' +
+        '<div role="button" class="nav-link-custom ' + (STATE.currentView === 'courses' ? 'active' : '') + '" onclick="switchNav(\'courses\')"><i class="bi bi-play-btn-fill icon-courses"></i>Akses Tutorial</div>' +
+        '<div role="button" class="nav-link-custom ' + (STATE.currentView === 'tools' ? 'active' : '') + '" onclick="switchNav(\'tools\')"><i class="bi bi-tools icon-tools"></i>Akses Tools</div>' +
+        '<div role="button" class="nav-link-custom ' + (STATE.currentView === 'websites' ? 'active' : '') + '" onclick="switchNav(\'websites\')"><i class="bi bi-layout-text-window-reverse icon-websites"></i>Contoh Web</div>' +
+        '<div role="button" class="nav-link-custom ' + (STATE.currentView === 'accessWebs' ? 'active' : '') + '" onclick="switchNav(\'accessWebs\')"><i class="bi bi-key-fill icon-access"></i>Hak Akses Web</div>' +
+        '<div role="button" class="nav-link-custom ' + (STATE.currentView === 'bonuses' ? 'active' : '') + '" onclick="switchNav(\'bonuses\')"><i class="bi bi-gift-fill icon-bonus"></i>Bonus Gratis</div>' +
+        '<div role="button" class="nav-link-custom ' + (STATE.currentView === 'community' ? 'active' : '') + '" onclick="switchNav(\'community\')"><i class="bi bi-people-fill icon-community"></i>Komunitas</div>' +
+        '<div role="button" class="nav-link-custom ' + (STATE.currentView === 'karyaMembers' ? 'active' : '') + '" onclick="switchNav(\'karyaMembers\')"><i class="bi bi-rocket-takeoff-fill icon-karya text-warning"></i>Karya Member</div>' +
+        (isAdmin ? '' +
+          '<div role="button" class="nav-link-custom ' + (STATE.currentView === 'members' ? 'active' : '') + '" onclick="switchNav(\'members\')"><i class="bi bi-person-badge-fill icon-members"></i>Kelola Member</div>' +
+          '<div role="button" class="nav-link-custom ' + (STATE.currentView === 'settings' ? 'active' : '') + '" onclick="switchNav(\'settings\')"><i class="bi bi-gear-fill icon-settings"></i>Pengaturan Web</div>' : '') +
+      '</div>' +
+    '</aside>';
+  }
+
+  function renderHeader() {
+    var u = STATE.user || {};
+    var isRealAdmin = u.role === 'ADMIN';
+
+    var avatarSvg = '<svg width="22" height="22" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 50%; display: block; flex-shrink: 0;">' +
+      '<circle cx="50" cy="50" r="50" fill="#2563EB"/>' +
+      '<path d="M50 24 C40.5 24, 39 31, 39 39 C39 47, 44 52.5, 50 52.5 C56 52.5, 61 47, 61 39 C61 31, 59.5 24, 50 24 Z" fill="#FFFFFF"/>' +
+      '<path d="M21 76 C21 61.5, 33 57.5, 50 57.5 C67 57.5, 79 61.5, 79 76 C79 88, 79 100, 50 100 C21 100, 21 88, 21 76 Z" fill="#FFFFFF"/>' +
+    '</svg>';
+
+    var pageTitles = {
+      dashboard: 'Dashboard',
+      courses: 'Akses Tutorial',
+      tools: 'Akses Tools',
+      websites: 'Contoh Web',
+      accessWebs: 'Hak Akses Web',
+      bonuses: 'Bonus Gratis',
+      community: 'Komunitas',
+      karyaMembers: 'Karya Member',
+      members: 'Kelola Member',
+      settings: 'Pengaturan Web',
+      profile: 'Profil Saya'
+    };
+
+    var notifBtnHtml = '<div class="dropdown me-1">' +
+      '<button class="notif-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Notifikasi" onclick="loadNotifications()">' +
+        '<i class="bi bi-bell-fill"></i>' +
+        '<span class="notif-badge-dot ' + (STATE.unreadNotifCount > 0 ? 'show' : '') + '" id="notifBadgeDot"></span>' +
+      '</button>' +
+      '<div class="dropdown-menu dropdown-menu-end notif-dropdown-menu">' +
+        '<div class="notif-header">' +
+          '<span class="fw-bold small">Notifikasi Portal</span>' +
+          '<div class="d-flex align-items-center gap-1">' +
+            ((isRealAdmin && !STATE.isPreviewMode) ? '<button class="btn btn-sm btn-primary-custom py-1 px-2 text-nowrap announcement-add-btn" style="font-size:0.7rem;" onclick="openAnnouncementModal()"><i class="bi bi-plus-lg me-1"></i>Pengumuman</button>' : '') +
+            '<button class="btn btn-sm btn-link text-decoration-none text-muted ms-1 btn-mark-all-read" style="font-size:0.75rem;" onclick="handleMarkAllRead()" title="Tandai Semua Sudah Dibaca"><i class="bi bi-check2-all fs-5"></i></button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="notif-list-container" id="notifDropdownList">' +
+          '<div class="p-3 text-center text-muted small">Memuat notifikasi...</div>' +
+        '</div>' +
+        '<div class="notif-footer" onclick="openAllNotifModal()">' +
+          '<button type="button" class="notif-footer-btn small fw-bold" onclick="event.preventDefault(); event.stopPropagation(); openAllNotifModal();">Lihat Semua Notifikasi</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+    return '<header class="app-header">' +
+      '<div class="d-flex align-items-center gap-2 gap-md-3">' +
+        '<button class="mobile-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>' +
+        '<h5 class="header-title">' + (pageTitles[STATE.currentView] || 'Portal') + '</h5>' +
+      '</div>' +
+      '<div class="header-datetime-box d-none d-lg-flex">' +
+        '<div id="headerTime">00:00:00</div>' +
+      '</div>' +
+      '<div class="header-right">' +
+        notifBtnHtml +
+        '<div class="dropdown">' +
+          '<div class="user-avatar" data-bs-toggle="dropdown" aria-expanded="false" title="Menu Akun" style="background: transparent; padding: 0; overflow: hidden; border: none; width: 38px; height: 38px; min-width: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer;">' +
+            '<i class="bi bi-person-circle text-primary" style="font-size: 38px; line-height: 1;"></i>' +
+          '</div>' +
+          '<ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2 p-2 account-avatar-menu" style="min-width: 200px;">' +
+            '<li class="px-3 py-2 text-center border-bottom mb-2">' +
+              '<div class="fw-bold fs-6 text-truncate" style="max-width: 170px;">' + (u.nama || 'User') + '</div>' +
+              '<span class="badge bg-primary-subtle text-primary fw-bold mt-1" style="font-size:0.68rem;">' + (STATE.isPreviewMode ? 'Member (Preview)' : formatFrontendLabel(u.role || 'MEMBER')) + '</span>' +
+            '</li>' +
+            '<li><div role="button" class="dropdown-item account-menu-item py-2 px-3 rounded-2 d-flex align-items-center gap-2" onclick="switchNav(\'profile\')">' + avatarSvg + '<span class="fw-semibold">Profil Saya</span></div></li>' +
+            '<li><div role="button" class="dropdown-item account-menu-item theme-menu-toggle py-2 px-3 rounded-2 d-flex align-items-center gap-2" onclick="toggleTheme()"><i class="bi ' + (STATE.theme === 'dark' ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill') + ' fs-5"></i><span class="fw-semibold">' + (STATE.theme === 'dark' ? 'Mode Terang' : 'Mode Gelap') + '</span></div></li>' +
+            '<li><hr class="dropdown-divider my-1"></li>' +
+            '<li><div role="button" class="dropdown-item account-menu-item py-2 px-3 rounded-2 text-danger fw-bold d-flex align-items-center gap-2" onclick="handleLogout()"><i class="bi bi-box-arrow-right fs-5"></i><span>Logout</span></div></li>' +
+          '</ul>' +
+        '</div>' +
+      '</div>' +
+    '</header>';
+  }
+
+  function toggleSidebar() {
+    var sidebar = document.getElementById('appSidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.toggle('show');
+    if (overlay) overlay.classList.toggle('show');
+  }
+
+  function switchNav(view) {
+    var sidebar = document.getElementById('appSidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('show');
+    if (overlay) overlay.classList.remove('show');
+    renderView(view);
+  }
+
+  function getLogEmail(l) {
+    var raw = (l.Email || l.Username || '').trim();
+    if (raw.includes('@')) {
+      return raw.replace(/@whydev\.com$/i, '@gmail.com');
+    }
+
+    if (STATE.dataStore.members) {
+      for (var k in STATE.dataStore.members) {
+        var m = STATE.dataStore.members[k];
+        if (m.id === raw || m.username === raw || m.nama === raw) {
+          if (m.email && m.email.includes('@')) {
+            return m.email.replace(/@whydev\.com$/i, '@gmail.com');
+          }
+        }
+      }
+    }
+    
+    return raw ? raw + '@gmail.com' : 'admin@gmail.com';
+  }
+
+  function renderDashboardView(res) {
+    var s = res.stats || {};
+    var u = res.user || STATE.user || {};
+    var isAdmin = ((u.role === 'ADMIN') || (res.role === 'ADMIN')) && !STATE.isPreviewMode;
+
+    var greeting = getTimeGreeting();
+
+    var cardRed = 'background: #ef4444; color: #ffffff; border: none;';
+    var cardYellow = 'background: #f59e0b; color: #ffffff; border: none;';
+    var cardGreen = 'background: #10b981; color: #ffffff; border: none;';
+    var cardBlue = 'background: #3b82f6; color: #ffffff; border: none;';
+    var cardPurple = 'background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #ffffff; border: none;';
+    
+    var iconStyle = 'background: rgba(255, 255, 255, 0.2); color: #ffffff;';
+    var labelStyle = 'color: rgba(255, 255, 255, 0.9);';
+
+    var welcomeTitle = isAdmin 
+      ? '<i class="bi bi-shield-check me-2"></i>' + greeting + ', Admin ' + (u.nama || '') + '!' 
+      : '<i class="bi bi-hand-thumbs-up-fill me-2"></i>' + greeting + ', ' + (u.nama || 'Member') + '!';
+
+    var welcomeSub = isAdmin 
+      ? 'Anda memiliki akses penuh untuk mengelola member, materi, tools, karya member, dan seluruh sistem Why Dev!.' 
+      : 'Anda login sebagai <strong>Member Premium</strong>. Akses seluruh materi, tools, karya member, dan bonus gratis Anda melalui portal ini.';
+
+    var welcomeCardHtml = '<div class="card-custom welcome-card">' +
+      '<div class="welcome-title">' + welcomeTitle + '</div>' +
+      '<div class="welcome-sub">' + welcomeSub + '</div>' +
+    '</div>';
+
+    if (isAdmin) {
+      return welcomeCardHtml +
+      '<div class="row row-cols-2 row-cols-sm-2 row-cols-xl-4 g-2 g-md-3 mb-3 mb-md-4">' +
+        '<div class="col"><div class="card-custom stat-card-5" style="' + cardRed + '"><div class="stat-icon" style="' + iconStyle + '"><i class="bi bi-people"></i></div><div><div class="stat-value text-white">' + (s.totalMembers || 0) + '</div><div class="stat-label" style="' + labelStyle + '">Total Member</div></div></div></div>' +
+        '<div class="col"><div class="card-custom stat-card-5" style="' + cardYellow + '"><div class="stat-icon" style="' + iconStyle + '"><i class="bi bi-person-check"></i></div><div><div class="stat-value text-white">' + (s.activeMembers || 0) + '</div><div class="stat-label" style="' + labelStyle + '">Aktif</div></div></div></div>' +
+        '<div class="col"><div class="card-custom stat-card-5" style="' + cardGreen + '"><div class="stat-icon" style="' + iconStyle + '"><i class="bi bi-box-arrow-in-right"></i></div><div><div class="stat-value text-white">' + (s.todayLogins || 0) + '</div><div class="stat-label" style="' + labelStyle + '">Login Hari Ini</div></div></div></div>' +
+        '<div class="col"><div class="card-custom stat-card-5" style="' + cardBlue + '"><div class="stat-icon" style="' + iconStyle + '"><i class="bi bi-broadcast"></i></div><div><div class="stat-value text-white">' + (s.onlineMembers || 0) + '</div><div class="stat-label" style="' + labelStyle + '">Sedang Online</div></div></div></div>' +
+      '</div>' +
+      '<div class="card-custom p-3 p-md-4 dashboard-login-activity">' +
+        '<h6 class="fw-bold mb-3">Aktivitas Login Terbaru (20 Terkini)</h6>' +
+        '<div class="table-responsive"><table class="table table-hover align-middle mb-0 text-nowrap mobile-login-table"><thead class="table-light"><tr><th>Email</th><th>Role</th><th>Waktu Login</th><th>Aksi/Device</th></tr></thead><tbody>' +
+        ((s.recentLogs || []).map(function(l) {
+          var isLogin = String(l.Action || '').toUpperCase() === 'LOGIN';
+          var actionBadge = isLogin 
+            ? '<span class="badge bg-success-subtle text-success fw-bold">LOGIN</span>' 
+            : '<span class="badge bg-danger-subtle text-danger fw-bold">LOGOUT</span>';
+          return '<tr><td class="fw-semibold">' + getLogEmail(l) + '</td><td><span class="badge bg-secondary-subtle text-dark role-activity-badge">' + formatFrontendLabel(l.Role) + '</span></td><td class="small text-muted">' + (l.LoginTime || '-') + '</td><td class="small">' + actionBadge + ' (' + (l.Device || 'Web Browser') + ')</td></tr>';
+        }).join('') || '<tr><td colspan="4" class="text-center text-muted">Belum ada aktivitas.</td></tr>') +
+        '</tbody></table></div>' +
+      '</div>';
+    }
+
+    return welcomeCardHtml +
+    '<div class="row g-2 g-md-3 mb-3 mb-md-4">' +
+      '<div class="col-6 col-lg-3"><div class="card-custom stat-card" style="' + cardRed + '"><div class="stat-icon" style="' + iconStyle + '"><i class="bi bi-play-btn"></i></div><div><div class="stat-value text-white">' + (s.totalCourses || 0) + '</div><div class="stat-label" style="' + labelStyle + '">Total Tutorial</div></div></div></div>' +
+      '<div class="col-6 col-lg-3"><div class="card-custom stat-card" style="' + cardYellow + '"><div class="stat-icon" style="' + iconStyle + '"><i class="bi bi-tools"></i></div><div><div class="stat-value text-white">' + (s.totalTools || 0) + '</div><div class="stat-label" style="' + labelStyle + '">Total Tools</div></div></div></div>' +
+      '<div class="col-6 col-lg-3"><div class="card-custom stat-card" style="' + cardGreen + '"><div class="stat-icon" style="' + iconStyle + '"><i class="bi bi-layout-text-window-reverse"></i></div><div><div class="stat-value text-white">' + (s.totalWebsites || 0) + '</div><div class="stat-label" style="' + labelStyle + '">Contoh Web</div></div></div></div>' +
+      '<div class="col-6 col-lg-3"><div class="card-custom stat-card" style="' + cardBlue + '"><div class="stat-icon" style="' + iconStyle + '"><i class="bi bi-gift"></i></div><div><div class="stat-value text-white">' + (s.totalBonuses || 0) + '</div><div class="stat-label" style="' + labelStyle + '">Bonus Gratis</div></div></div></div>' +
+    '</div>' +
+    '<div class="member-access-section">' +
+    '<h5 class="fw-bold fs-6 fs-md-5 mb-3">Apa yang Bisa Kamu Akses?</h5>' +
+    '<div class="row g-2 g-md-3">' +
+      '<div class="col-12 col-md-4"><div class="card-custom member-access-card p-3 p-md-3.5 h-100 d-flex flex-column justify-content-between"><div class="d-flex align-items-center gap-3 mb-3"><div class="stat-icon text-success bg-success-subtle m-0" style="width: 44px; height: 44px; min-width: 44px; font-size: 1.25rem; border-radius: 12px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-journal-code"></i></div><h6 class="fw-bold fs-6 mb-0">Akses Tutorial</h6></div><button class="btn btn-outline-success btn-sm rounded-3 w-100 py-2" onclick="switchNav(\'courses\')">Tonton Video</button></div></div>' +
+      '<div class="col-12 col-md-4"><div class="card-custom member-access-card p-3 p-md-3.5 h-100 d-flex flex-column justify-content-between"><div class="d-flex align-items-center gap-3 mb-3"><div class="stat-icon text-primary bg-primary-subtle m-0" style="width: 44px; height: 44px; min-width: 44px; font-size: 1.25rem; border-radius: 12px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-cpu"></i></div><h6 class="fw-bold fs-6 mb-0">Akses Tools</h6></div><button class="btn btn-outline-primary btn-sm rounded-3 w-100 py-2" onclick="switchNav(\'tools\')">Buka Tools</button></div></div>' +
+      '<div class="col-12 col-md-4"><div class="card-custom member-access-card p-3 p-md-3.5 h-100 d-flex flex-column justify-content-between"><div class="d-flex align-items-center gap-3 mb-3"><div class="stat-icon text-warning bg-warning-subtle m-0" style="width: 44px; height: 44px; min-width: 44px; font-size: 1.25rem; border-radius: 12px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-rocket-takeoff-fill"></i></div><h6 class="fw-bold fs-6 mb-0">Karya Member</h6></div><button class="btn btn-outline-warning btn-sm rounded-3 w-100 py-2" onclick="switchNav(\'karyaMembers\')">Lihat Karya</button></div></div>' +
+      '<div class="col-12 col-md-4"><div class="card-custom member-access-card p-3 p-md-3.5 h-100 d-flex flex-column justify-content-between"><div class="d-flex align-items-center gap-3 mb-3"><div class="stat-icon text-info bg-info-subtle m-0" style="width: 44px; height: 44px; min-width: 44px; font-size: 1.25rem; border-radius: 12px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-window-sidebar"></i></div><h6 class="fw-bold fs-6 mb-0">Contoh Web</h6></div><button class="btn btn-outline-info btn-sm rounded-3 w-100 py-2" onclick="switchNav(\'websites\')">Lihat Web</button></div></div>' +
+      '<div class="col-12 col-md-4"><div class="card-custom member-access-card p-3 p-md-3.5 h-100 d-flex flex-column justify-content-between"><div class="d-flex align-items-center gap-3 mb-3"><div class="stat-icon text-danger bg-danger-subtle m-0" style="width: 44px; height: 44px; min-width: 44px; font-size: 1.25rem; border-radius: 12px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-key"></i></div><h6 class="fw-bold fs-6 mb-0">Hak Akses Web</h6></div><button class="btn btn-outline-danger btn-sm rounded-3 w-100 py-2" onclick="switchNav(\'accessWebs\')">Buka Hak Akses</button></div></div>' +
+      '<div class="col-12 col-md-4"><div class="card-custom member-access-card p-3 p-md-3.5 h-100 d-flex flex-column justify-content-between"><div class="d-flex align-items-center gap-3 mb-3"><div class="stat-icon text-success bg-success-subtle m-0" style="width: 44px; height: 44px; min-width: 44px; font-size: 1.25rem; border-radius: 12px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-people-fill"></i></div><h6 class="fw-bold fs-6 mb-0">Komunitas</h6></div><button class="btn btn-outline-success btn-sm rounded-3 w-100 py-2" onclick="switchNav(\'community\')">Buka Komunitas</button></div></div>' +
+    '</div></div>';
+  }
+
+  function renderKaryaMemberView(items) {
+    var isAdmin = STATE.user && STATE.user.role === 'ADMIN' && !STATE.isPreviewMode;
+    var currentUserId = STATE.user ? String(STATE.user.id || STATE.user.ID || '') : '';
+
+    var topBar = (!isAdmin)
+      ? '<div class="d-flex align-items-center justify-content-end mb-3.5"><button class="btn btn-primary-custom karya-add-btn fw-bold d-flex align-items-center" onclick="openKaryaMemberModal()"><i class="bi bi-plus-lg"></i><span>Karya</span></button></div>'
+      : '';
+
+    if (!items || items.length === 0) {
+      return topBar +
+      '<div class="card-custom p-4 p-md-5 text-center my-3 my-md-4" style="background: radial-gradient(circle at center, var(--primary-light), var(--card-bg)); border: 2px dashed var(--border-color);">' +
+        '<div class="stat-icon text-warning bg-warning-subtle mx-auto mb-3" style="width: 64px; height: 64px; font-size: 2rem; border-radius: 20px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-rocket-takeoff-fill"></i></div>' +
+        '<h4 class="fw-bold mb-2 fs-5 fs-md-4">Belum Ada Karya yang Di-upload</h4>' +
+        '<p class="text-muted small mb-4 max-w-600 mx-auto" style="line-height: 1.6;">Punya web atau aplikasi hasil karya sendiri pake script Why Dev? Yuk jadi yang pertama pamerkan karya kamu di sini! Selain bisa buat referensi dan inspirasi member lain, kamu juga bisa jual aplikasi kamu ke sesama member.</p>' +
+        '<button class="btn btn-primary-custom py-2.5 px-4 fs-6 fw-bold rounded-3" onclick="openKaryaMemberModal()"><i class="bi bi-upload me-2"></i>Upload Karya Pertama Kamu</button>' +
+      '</div>';
+    }
+
+    return topBar +
+    '<div class="row g-2 g-md-3">' +
+      items.map(function(k) {
+        var imgUrl = getValidImage(k.Thumbnail, DEFAULT_IMAGES.karyaMembers);
+        var isOwner = currentUserId && String(k.UserID || k.userId || '') === currentUserId;
+
+        var isPending = String(k.Status || '').toUpperCase() === 'PENDING';
+        var statusBadge = '';
+        if (isAdmin) {
+          statusBadge = isPending 
+            ? '<span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark shadow-sm z-3"><i class="bi bi-clock-history me-1"></i>PENDING</span>'
+            : '<span class="position-absolute top-0 start-0 m-2 badge bg-success text-white shadow-sm z-3"><i class="bi bi-check-circle-fill me-1"></i>APPROVED</span>';
+        } else if (isOwner && isPending) {
+          statusBadge = '<span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark shadow-sm z-3"><i class="bi bi-clock-history me-1"></i>MENUNGGU APPROVAL</span>';
+        }
+
+        var isJual = String(k.TipeKarya || '').toUpperCase() === 'DIJUAL';
+        var namaPembuatText = k.NamaPembuat ? String(k.NamaPembuat) : 'Member Why Dev';
+
+        var rawHarga = k.Harga || k.harga || '';
+        var hargaNum = Number(String(rawHarga).replace(/[^0-9]/g, ''));
+        var hargaFormatted = (!isNaN(hargaNum) && hargaNum > 0) ? hargaNum.toLocaleString('id-ID') : rawHarga;
+
+        var tipeBadge = isJual
+          ? '<span class="badge bg-success-subtle text-success border border-success-subtle fw-bold" style="font-size:0.68rem;"><i class="bi bi-cart-check-fill me-1"></i>Rp ' + (hargaFormatted || 'Hubungi Pembuat') + '</span>'
+          : '<span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold" style="font-size:0.68rem;"><i class="bi bi-stars me-1"></i>Showcase</span>';
+
+        var waLink = String(k.LinkBeli || k.linkBeli || '').trim();
+        if (waLink && !waLink.startsWith('http')) {
+          var cleanNum = waLink.replace(/[^0-9]/g, '');
+          var hargaText = (isJual && hargaFormatted) ? ' (Rp ' + hargaFormatted + ')' : '';
+          var textMsg = encodeURIComponent('Halo ' + namaPembuatText + ', saya tertarik membeli aplikasi "' + (k.JudulKarya || '') + '"' + hargaText + '. Boleh minta info selengkapnya?');
+          waLink = 'https://wa.me/' + cleanNum + '?text=' + textMsg;
+        }
+
+        var hasWa = (isJual && waLink);
+
+        return '<div class="col-12 col-md-6 col-lg-3"><div class="card-custom h-100 d-flex flex-column position-relative">' +
+          '<div class="card-img-wrapper"><i class="bi bi-image lazy-image-icon" aria-hidden="true"></i>' + statusBadge + '<img src="' + imgUrl + '" alt="' + (k.JudulKarya || '') + '" loading="lazy" onload="this.classList.add(\'img-loaded\')" onerror="this.onerror=null; this.classList.add(\'img-loaded\'); this.src=\'' + DEFAULT_IMAGES.karyaMembers + '\';"></div>' +
+          '<div class="p-3 p-lg-2.5 d-flex flex-column flex-grow-1 justify-content-between">' +
+            '<div>' +
+              '<div class="d-flex align-items-center justify-content-between mb-2">' +
+                tipeBadge +
+                '<span class="text-muted small fw-semibold text-truncate ms-1" style="font-size:0.72rem;" title="Pembuat"><i class="bi bi-person-fill me-1"></i>' + namaPembuatText + '</span>' +
+              '</div>' +
+              '<h6 class="fw-bold card-title-single mb-2" title="' + (k.JudulKarya || '') + '">' + (k.JudulKarya || '') + '</h6>' +
+              (k.Deskripsi ? '<p class="text-muted small mb-3 text-truncate-2 karya-description">' + k.Deskripsi + '</p>' : '') +
+            '</div>' +
+
+            '<div class="d-flex flex-column gap-2 mt-2">' +
+              '<div class="d-flex gap-2 align-items-stretch">' +
+                '<a href="' + (k.DemoURL || '#') + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary-custom btn-sm flex-grow-1 text-center py-2 px-2 card-btn-text d-flex align-items-center justify-content-center gap-1 rounded-3"><i class="bi bi-box-arrow-up-right"></i><span>Lihat Demo</span></a>' +
+                (hasWa ? '<a href="' + waLink + '" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm text-center py-2 px-2.5 fw-bold d-flex align-items-center justify-content-center gap-1 rounded-3" style="flex-shrink: 0;" title="Chat WA"><i class="bi bi-whatsapp"></i><span>Chat</span></a>' : '') +
+              '</div>' +
+              
+              ((isAdmin || isOwner) ? '<div class="d-flex align-items-center justify-content-between pt-2 border-top gap-1">' +
+                '<div class="btn-group btn-group-sm w-100">' +
+                  (isAdmin ? '<button class="btn ' + (isPending ? 'btn-success' : 'btn-outline-warning') + ' btn-sm py-1" onclick="handleToggleKaryaStatus(\'' + k.ID + '\')" title="Ubah Status Approve">' + (isPending ? '<i class="bi bi-check-lg me-1"></i>Approve' : '<i class="bi bi-x-circle me-1"></i>Unapprove') + '</button>' : '') +
+                  '<button class="btn btn-outline-secondary btn-sm py-1" onclick="openKaryaMemberModal(\'' + k.ID + '\')" title="Edit"><i class="bi bi-pencil"></i></button>' +
+                  '<button class="btn btn-outline-danger btn-sm py-1" onclick="confirmDelete(\'deleteKaryaMember\', \'' + k.ID + '\')" title="Hapus"><i class="bi bi-trash"></i></button>' +
+                '</div>' +
+              '</div>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div></div>';
+      }).join('') +
+    '</div>';
+  }
+
+  function openKaryaMemberModal(id) {
+    var data = id ? STATE.dataStore.karyaMembers[id] : null;
+    var isEdit = !!data;
+
+    var namaPembuatDefault = data ? (data.NamaPembuat || '') : '';
+    var tipeKaryaDefault = data ? (data.TipeKarya || 'SHOWCASE') : 'SHOWCASE';
+
+    document.getElementById('crudModalTitle').innerText = isEdit ? 'Edit Karya Member' : 'Upload Karya Member';
+    document.getElementById('crudModalBody').innerHTML = '<form onsubmit="saveKaryaMember(event, \'' + (isEdit ? data.ID : '') + '\')">' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Judul Karya / Nama Aplikasi</label><input type="text" id="kJudul" class="form-control" value="' + (data ? data.JudulKarya : '') + '" placeholder="Masukkan nama karya member" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Nama Pembuat Karya</label><input type="text" id="kPembuat" class="form-control" value="' + namaPembuatDefault + '" placeholder="Masukkan nama asli Anda" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Link Demo Aplikasi (URL)</label><input type="url" id="kDemo" class="form-control" value="' + (data ? data.DemoURL : '') + '" placeholder="Masukkan link demo karya member" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Thumbnail Karya</label><div class="image-source-row"><div class="image-file-picker"><input type="file" id="kThumbFile" class="whydev-file-input" accept="image/*" onchange="syncImageSource(\'kThumbFile\',\'kThumbUrl\',\'kThumbFileName\',\'file\')"><button type="button" class="whydev-file-btn" onclick="openStyledFilePicker(\'kThumbFile\')"><i class="bi bi-image me-2"></i>Pilih File</button><span id="kThumbFileName" class="whydev-file-name">Belum ada file dipilih</span></div><input type="url" id="kThumbUrl" class="form-control image-link-input" placeholder="Masukkan link gambar / Google Drive" oninput="syncImageSource(\'kThumbFile\',\'kThumbUrl\',\'kThumbFileName\',\'link\')"></div><div class="form-text">Pilih salah satu: upload file atau gunakan link gambar.</div></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Deskripsi Singkat Karya (Opsional)</label><textarea id="kDeskripsi" class="form-control" rows="2" placeholder="Jelaskan keunggulan atau fitur utama karya kamu...">' + (data ? (data.Deskripsi || '') : '') + '</textarea></div>' +
+      '<div class="row g-2 mb-3">' +
+        '<div class="col-12 col-md-4"><label class="form-label small fw-bold">Tipe Karya</label><select id="kTipe" class="form-select" onchange="toggleLinkBeliInput(this.value)"><option value="SHOWCASE" ' + (tipeKaryaDefault === 'SHOWCASE' ? 'selected' : '') + '>Showcase (Portofolio)</option><option value="DIJUAL" ' + (tipeKaryaDefault === 'DIJUAL' ? 'selected' : '') + '>Bisa Dibeli (Dijual)</option></select></div>' +
+        '<div class="col-6 col-md-4" id="hargaWrapper" style="' + (tipeKaryaDefault === 'DIJUAL' ? '' : 'display:none;') + '"><label class="form-label small fw-bold">Harga Karya (Rp)</label><input type="number" id="kHarga" class="form-control" value="' + (data ? (data.Harga || '') : '') + '" placeholder="Contoh: 150000"></div>' +
+        '<div class="col-6 col-md-4" id="linkBeliWrapper" style="' + (tipeKaryaDefault === 'DIJUAL' ? '' : 'display:none;') + '"><label class="form-label small fw-bold">Nomor WA / Link WA</label><input type="text" id="kLinkBeli" class="form-control" value="' + (data ? (data.LinkBeli || '') : '') + '" placeholder="628123456789"></div>' +
+      '</div>' +
+      '<div class="text-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary-custom">Kirim Karya</button></div>' +
+    '</form>';
+    crudModalInstance.show();
+  }
+
+  function toggleLinkBeliInput(val) {
+    var wrapperLink = document.getElementById('linkBeliWrapper');
+    var wrapperHarga = document.getElementById('hargaWrapper');
+    var isJual = (val === 'DIJUAL');
+    if (wrapperLink) wrapperLink.style.display = isJual ? 'block' : 'none';
+    if (wrapperHarga) wrapperHarga.style.display = isJual ? 'block' : 'none';
+  }
+
+  function reloadKaryaMembersView() {
+    return runBackend('getKaryaMembers', STATE.token).then(function(res) {
+      if (res && res.success) {
+        STATE.dataStore.karyaMembers = {};
+        (res.data || []).forEach(function(item) {
+          STATE.dataStore.karyaMembers[item.ID] = item;
+        });
+        if (STATE.currentView === 'karyaMembers') {
+          var container = document.getElementById('mainContent');
+          if (container) {
+            var items = Object.values(STATE.dataStore.karyaMembers);
+            container.innerHTML = '<div class="fade-in-content">' + renderKaryaMemberView(filterItemsByPreview(items)) + '</div>';
+          }
+        }
+      }
+    });
+  }
+
+  async function saveKaryaMember(e, id) {
+    e.preventDefault();
+
+    var sendNotif = false;
+    if (!id && STATE.user && STATE.user.role === 'ADMIN' && !STATE.isPreviewMode) {
+      sendNotif = await askSendNotification();
+    }
+
+    var finalThumb = await getImageSource('kThumbFile','kThumbUrl', id && STATE.dataStore.karyaMembers[id] ? STATE.dataStore.karyaMembers[id].Thumbnail : '', false);
+    showLoading(false);
+
+    var payload = {
+      judulKarya: document.getElementById('kJudul').value,
+      namaPembuat: document.getElementById('kPembuat').value,
+      demoURL: document.getElementById('kDemo').value,
+      thumbnail: finalThumb,
+      deskripsi: document.getElementById('kDeskripsi').value,
+      tipeKarya: document.getElementById('kTipe').value,
+      harga: document.getElementById('kHarga') ? document.getElementById('kHarga').value : '',
+      linkBeli: document.getElementById('kLinkBeli') ? document.getElementById('kLinkBeli').value : '',
+      sendNotif: sendNotif
+    };
+
+    crudModalInstance.hide();
+    var fn = id ? runBackend('updateKaryaMember', STATE.token, id, payload) : runBackend('addKaryaMember', STATE.token, payload);
+    fn.then(function(res) {
+      if (res && res.success) { 
+        showToast(res.message); 
+        reloadKaryaMembersView().finally(function() {
+          hideLoading();
+        });
+      } else { 
+        hideLoading();
+        showToast(res ? res.message : 'Gagal menyimpan karya', 'error'); 
+      }
+    }).catch(function(err) {
+      hideLoading();
+      showToast('Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan'), 'error');
+    });
+  }
+
+  function handleToggleKaryaStatus(id) {
+    showLoading(false);
+    runBackend('toggleKaryaStatus', STATE.token, id).then(function(res) {
+      if (res && res.success) {
+        showToast(res.message);
+        reloadKaryaMembersView().finally(function() {
+          hideLoading();
+        });
+      } else { 
+        hideLoading();
+        showToast(res ? res.message : 'Gagal mengubah status', 'error'); 
+      }
+    }).catch(function(err) {
+      hideLoading();
+      showToast(err.message || 'Terjadi kesalahan sistem', 'error');
+    });
+  }
+
+  function renderContentCategory(item) {
+    var category = item && (item.Category || item.category || '');
+    category = String(category).trim();
+    return category ? '<span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold content-category-badge"><i class="bi bi-tag-fill me-1"></i>' + category + '</span>' : '';
+  }
+
+  function renderToolsView(items) {
+    var isAdmin = STATE.user.role === 'ADMIN' && !STATE.isPreviewMode;
+    var topBar = '';
+
+    return topBar +
+    (items.length === 0 ? renderEmptyState() : '<div class="row g-2 g-md-3">' +
+      items.map(function(t) {
+        var imgUrl = getValidImage(t.Thumbnail, DEFAULT_IMAGES.tools);
+        var isPrivate = ['PRIVATE','INACTIVE','NONAKTIF'].indexOf(String(t.Status || '').toUpperCase()) !== -1;
+        var privateBadge = (isAdmin && isPrivate) ? '<span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark shadow-sm z-3"><i class="bi bi-lock-fill me-1"></i>Private</span>' : '';
+
+        return '<div class="col-12 col-md-6 col-lg-3 tool-card"><div class="card-custom h-100 d-flex flex-column position-relative">' +
+          '<div class="card-img-wrapper"><i class="bi bi-image lazy-image-icon" aria-hidden="true"></i>' + privateBadge + '<img src="' + imgUrl + '" alt="' + t.Title + '" loading="lazy" onload="this.classList.add(\'img-loaded\')" onerror="this.onerror=null; this.classList.add(\'img-loaded\'); this.src=\'' + DEFAULT_IMAGES.tools + '\';"></div>' +
+          '<div class="p-3 p-lg-2.5 d-flex flex-column flex-grow-1 justify-content-between">' +
+            renderContentCategory(t) + '<h6 class="fw-bold card-title-single mb-3 mb-lg-2.5" title="' + t.Title + '">' + t.Title + '</h6>' +
+            '<div class="d-flex gap-2 gap-lg-1.5">' +
+              '<a href="' + t.Link + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary-custom btn-sm flex-grow-1 text-center py-2 py-lg-1.5 px-2 card-btn-text"><i class="bi bi-box-arrow-up-right me-1"></i>' + (t.ButtonText || 'Buka Tool') + '</a>' +
+              (isAdmin ? '<button class="btn btn-outline-secondary btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="openToolModal(\'' + t.ID + '\')"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="confirmDelete(\'deleteTool\', \'' + t.ID + '\')"><i class="bi bi-trash"></i></button>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div></div>';
+      }).join('') +
+    '</div>');
+  }
+
+  function openToolModal(id) {
+    var data = id ? STATE.dataStore.tools[id] : null;
+    var isEdit = !!data;
+    var currStatus = data ? String(data.Status).toUpperCase() : 'PUBLIC';
+    if (currStatus === 'ACTIVE') currStatus = 'PUBLIC';
+    if (currStatus === 'INACTIVE') currStatus = 'PRIVATE';
+
+    document.getElementById('crudModalTitle').innerText = isEdit ? 'Edit Tool' : 'Tambah Tool';
+    document.getElementById('crudModalBody').innerHTML = '<form onsubmit="saveTool(event, \'' + (isEdit ? data.ID : '') + '\')">' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Judul Tool</label><input type="text" id="tTitle" class="form-control" value="' + (data ? data.Title : '') + '" placeholder="Masukkan nama tool" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Kategori (Opsional)</label><input type="text" id="tCategory" class="form-control" value="' + (data ? (data.Category || '') : '') + '" placeholder="Contoh: AI, Developer, Design"></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Link Tool (URL)</label><input type="url" id="tLink" class="form-control" value="' + (data ? data.Link : '') + '" placeholder="Masukkan link tool" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Thumbnail</label><div class="image-source-row"><div class="image-file-picker"><input type="file" id="tThumbFile" class="whydev-file-input" accept="image/*" onchange="syncImageSource(\'tThumbFile\',\'tThumbUrl\',\'tThumbFileName\',\'file\')"><button type="button" class="whydev-file-btn" onclick="openStyledFilePicker(\'tThumbFile\')"><i class="bi bi-image me-2"></i>Pilih File</button><span id="tThumbFileName" class="whydev-file-name">Belum ada file dipilih</span></div><input type="url" id="tThumbUrl" class="form-control image-link-input" placeholder="Masukkan link gambar / Google Drive" oninput="syncImageSource(\'tThumbFile\',\'tThumbUrl\',\'tThumbFileName\',\'link\')"></div><div class="form-text">Pilih salah satu: upload file atau gunakan link gambar.</div></div>' +
+      '<div class="row g-2 mb-4"><div class="col-6"><label class="form-label small fw-bold">Status Akses</label><select id="tStatus" class="form-select"><option value="PUBLIC" ' + (currStatus === 'PUBLIC' ? 'selected' : '') + '>Public</option><option value="PRIVATE" ' + (currStatus === 'PRIVATE' ? 'selected' : '') + '>Private</option></select></div><div class="col-6"><label class="form-label small fw-bold">Urutan</label><input type="number" id="tSort" class="form-control" value="' + (data ? data.SortOrder : 1) + '"></div></div>' +
+      '<div class="text-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary-custom">Simpan</button></div>' +
+    '</form>';
+    crudModalInstance.show();
+  }
+
+  async function saveTool(e, id) {
+    e.preventDefault();
+
+    var sendNotif = false;
+    if (!id && STATE.user && STATE.user.role === 'ADMIN' && !STATE.isPreviewMode) {
+      sendNotif = await askSendNotification();
+    }
+
+    var finalThumb = await getImageSource('tThumbFile','tThumbUrl', id && STATE.dataStore.tools[id] ? STATE.dataStore.tools[id].Thumbnail : '', false);
+    showLoading(false);
+
+    var payload = {
+      title: document.getElementById('tTitle').value,
+      category: document.getElementById('tCategory').value.trim(),
+      link: document.getElementById('tLink').value,
+      description: '',
+      thumbnail: finalThumb,
+      buttonText: 'Buka Tool',
+      status: document.getElementById('tStatus').value,
+      sortOrder: document.getElementById('tSort').value,
+      sendNotif: sendNotif
+    };
+    crudModalInstance.hide();
+    var fn = id ? runBackend('updateTool', STATE.token, id, payload) : runBackend('addTool', STATE.token, payload);
+    fn.then(function(res) {
+      hideLoading();
+      if (res.success) { showToast(res.message); preloadAllData(); loadViewContent('tools'); }
+      else { showToast(res.message, 'error'); }
+    }).catch(function(err) {
+      hideLoading();
+      showToast('Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan'), 'error');
+    });
+  }
+
+  function extractYoutubeId(url) {
+    if (!url) return '';
+    var match = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([\w-]{11})/i);
+    return (match && match[1]) ? match[1] : '';
+  }
+
+  function getYoutubeThumb(c) {
+    if (!c) return DEFAULT_IMAGES.courses || 'https://lh3.googleusercontent.com/d/1rtwJ56R526s9KZmjv8TW3G6mXptPU8A8';
+    var ytId = extractYoutubeId(c.YoutubeURL);
+
+    if (c.Thumbnail && c.Thumbnail.trim() !== '') {
+      return getValidImage(c.Thumbnail.trim(), ytId ? 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg' : 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
+    }
+
+    if (ytId) {
+      return 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
+    }
+
+    return DEFAULT_IMAGES.courses || 'https://lh3.googleusercontent.com/d/1rtwJ56R526s9KZmjv8TW3G6mXptPU8A8';
+  }
+
+  function handleYtThumbLoad(img, ytId) {
+    if (!img) return;
+    img.classList.add('img-loaded');
+  }
+
+  function handleYtThumbError(img, ytId) {
+    if (!img) return;
+    var step = parseInt(img.getAttribute('data-yt-fallback-step') || '0', 10);
+    if (ytId && step === 0) {
+      img.setAttribute('data-yt-fallback-step', '1');
+      img.src = 'https://img.youtube.com/vi/' + ytId + '/mqdefault.jpg';
+      return;
+    }
+    if (ytId && step === 1) {
+      img.setAttribute('data-yt-fallback-step', '2');
+      img.src = 'https://img.youtube.com/vi/' + ytId + '/sddefault.jpg';
+      return;
+    }
+    img.src = 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg';
+    img.classList.add('img-loaded');
+  }
+
+  function renderCoursesView(items) {
+    var isAdmin = STATE.user.role === 'ADMIN' && !STATE.isPreviewMode;
+    var topBar = '';
+
+    return topBar +
+    (items.length === 0 ? renderEmptyState() : '<div class="row g-2 g-md-3">' +
+      items.map(function(c) {
+        var ytThumb = getYoutubeThumb(c);
+        var ytUrl = c.YoutubeURL || '#';
+        var ytId = extractYoutubeId(c.YoutubeURL);
+
+        var isPrivate = ['PRIVATE','INACTIVE','NONAKTIF'].indexOf(String(c.Status || '').toUpperCase()) !== -1;
+        var privateBadge = (isAdmin && isPrivate) ? '<span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark shadow-sm z-3"><i class="bi bi-lock-fill me-1"></i>Private</span>' : '';
+
+        return '<div class="col-12 col-md-6 col-lg-3 course-card"><div class="card-custom h-100 d-flex flex-column">' +
+          '<div class="position-relative cursor-pointer" onclick="openVideoModal(\'' + c.ID + '\')">' +
+            privateBadge +
+            '<div class="card-img-wrapper tutorial-img-wrapper"><img src="' + ytThumb + '" alt="' + c.Title + '" data-yt-fallback-step="0" onload="handleYtThumbLoad(this, \'' + ytId + '\');" onerror="handleYtThumbError(this, \'' + ytId + '\');"></div>' +
+            '<div class="position-absolute top-50 start-50 translate-middle text-center d-flex flex-column align-items-center justify-content-center tutorial-play-overlay" style="width: 100%; z-index: 3;">' +
+              '<div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center card-play-btn shadow-sm" style="position:relative; z-index:2;"><i class="bi bi-play-fill fs-3"></i></div>' +
+              '<span class="text-white small mt-1 fw-semibold opacity-75 text-nowrap" style="font-size:0.7rem; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Tonton Video</span>' +
+            '</div>' +
+            '<span class="position-absolute bottom-0 end-0 bg-dark text-white me-2 mb-2 px-2 py-0.5 rounded small fw-bold" style="font-size:0.68rem;">' + (c.Duration || 'Video') + '</span>' +
+          '</div>' +
+          '<div class="p-3 p-lg-2.5 d-flex flex-column flex-grow-1 justify-content-between">' +
+            renderContentCategory(c) + '<h6 class="fw-bold card-title-single mb-3 mb-lg-2.5" title="' + c.Title + '">' + c.Title + '</h6>' +
+            '<div class="d-flex gap-2 gap-lg-1.5">' +
+              '<a href="' + ytUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary-custom btn-sm flex-grow-1 text-center py-2 py-lg-1.5 px-2 card-btn-text text-decoration-none"><i class="bi bi-youtube me-1"></i>Tonton di YouTube</a>' +
+              (isAdmin ? '<button class="btn btn-outline-secondary btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="openCourseModal(\'' + c.ID + '\')"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="confirmDelete(\'deleteCourse\', \'' + c.ID + '\')"><i class="bi bi-trash"></i></button>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div></div>';
+      }).join('') +
+    '</div>');
+  }
+
+  function openVideoModal(id) {
+    var c = STATE.dataStore.courses[id];
+    if (!c) return;
+    document.getElementById('videoModalTitle').innerText = c.Title;
+    var ytId = extractYoutubeId(c.YoutubeURL);
+    var embedUrl = ytId ? ('https://www.youtube.com/embed/' + ytId) : (c.YoutubeURL || '');
+    document.getElementById('videoIframe').src = embedUrl + '?autoplay=1';
+    videoModalInstance.show();
+  }
+
+  function closeVideoModal() {
+    document.getElementById('videoIframe').src = '';
+  }
+
+  function openCourseModal(id) {
+    var data = id ? STATE.dataStore.courses[id] : null;
+    var isEdit = !!data;
+    var currStatus = data ? String(data.Status).toUpperCase() : 'PUBLIC';
+    if (currStatus === 'ACTIVE') currStatus = 'PUBLIC';
+    if (currStatus === 'INACTIVE') currStatus = 'PRIVATE';
+
+    document.getElementById('crudModalTitle').innerText = isEdit ? 'Edit Tutorial' : 'Tambah Tutorial';
+    document.getElementById('crudModalBody').innerHTML = '<form onsubmit="saveCourse(event, \'' + (isEdit ? data.ID : '') + '\')">' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Judul Tutorial</label><input type="text" id="cTitle" class="form-control" value="' + (data ? data.Title : '') + '" placeholder="Masukkan nama tutorial" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Kategori (Opsional)</label><input type="text" id="cCategory" class="form-control" value="' + (data ? (data.Category || '') : '') + '" placeholder="Contoh: Google Apps Script, Pemula"></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">YouTube URL</label><input type="url" id="cUrl" class="form-control" value="' + (data ? data.YoutubeURL : '') + '" placeholder="Masukkan link tutorial" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Thumbnail Tutorial</label><div class="image-source-row"><div class="image-file-picker"><input type="file" id="cThumbFile" class="whydev-file-input" accept="image/*" onchange="syncImageSource(\'cThumbFile\',\'cThumbUrl\',\'cThumbFileName\',\'file\')"><button type="button" class="whydev-file-btn" onclick="openStyledFilePicker(\'cThumbFile\')"><i class="bi bi-image me-2"></i>Pilih File</button><span id="cThumbFileName" class="whydev-file-name">Belum ada file dipilih</span></div><input type="url" id="cThumbUrl" class="form-control image-link-input" placeholder="Masukkan link gambar / Google Drive" oninput="syncImageSource(\'cThumbFile\',\'cThumbUrl\',\'cThumbFileName\',\'link\')"></div><div class="form-text">Pilih salah satu: upload file atau gunakan link gambar. Jika dikosongkan, thumbnail YouTube akan digunakan.</div></div>' +
+      '<div class="row g-2 mb-4"><div class="col-4"><label class="form-label small fw-bold">Durasi</label><input type="text" id="cDur" class="form-control" value="' + (data ? data.Duration : '15 Min') + '"></div><div class="col-4"><label class="form-label small fw-bold">Status Akses</label><select id="cStatus" class="form-select"><option value="PUBLIC" ' + (currStatus === 'PUBLIC' ? 'selected' : '') + '>Public</option><option value="PRIVATE" ' + (currStatus === 'PRIVATE' ? 'selected' : '') + '>Private</option></select></div><div class="col-4"><label class="form-label small fw-bold">Urutan</label><input type="number" id="cSort" class="form-control" value="' + (data ? data.SortOrder : 1) + '"></div></div>' +
+      '<div class="text-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary-custom">Simpan</button></div>' +
+    '</form>';
+    crudModalInstance.show();
+  }
+
+  async function saveCourse(e, id) {
+    e.preventDefault();
+
+    var sendNotif = false;
+    if (!id && STATE.user && STATE.user.role === 'ADMIN' && !STATE.isPreviewMode) {
+      sendNotif = await askSendNotification();
+    }
+
+    var payload = {
+      title: document.getElementById('cTitle').value,
+      category: document.getElementById('cCategory').value.trim(),
+      youtubeURL: document.getElementById('cUrl').value,
+      thumbnail: await getImageSource('cThumbFile','cThumbUrl', id && STATE.dataStore.courses[id] ? STATE.dataStore.courses[id].Thumbnail : '', false),
+      description: '',
+      duration: document.getElementById('cDur').value,
+      status: document.getElementById('cStatus').value,
+      sortOrder: document.getElementById('cSort').value,
+      sendNotif: sendNotif
+    };
+    crudModalInstance.hide();
+    showLoading(false);
+    var fn = id ? runBackend('updateCourse', STATE.token, id, payload) : runBackend('addCourse', STATE.token, payload);
+    fn.then(function(res) {
+      hideLoading();
+      if (res.success) { showToast(res.message); preloadAllData(); loadViewContent('courses'); }
+      else { showToast(res.message, 'error'); }
+    });
+  }
+
+  function renderCommunityView(items) {
+    var isAdmin = STATE.user.role === 'ADMIN' && !STATE.isPreviewMode;
+    var topBar = '';
+
+    return topBar +
+    (items.length === 0 ? renderEmptyState() : '<div class="row g-2 g-md-3">' +
+      items.map(function(c) {
+        var imgUrl = getValidImage(c.ImageURL || c.Icon, DEFAULT_IMAGES.community);
+        var isPrivate = ['PRIVATE','INACTIVE','NONAKTIF'].indexOf(String(c.Status || '').toUpperCase()) !== -1;
+        var privateBadge = (isAdmin && isPrivate) ? '<span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark shadow-sm z-3"><i class="bi bi-lock-fill me-1"></i>Private</span>' : '';
+
+        return '<div class="col-12 col-md-6 col-lg-3"><div class="card-custom h-100 d-flex flex-column position-relative">' +
+          '<div class="card-img-wrapper"><i class="bi bi-image lazy-image-icon" aria-hidden="true"></i>' + privateBadge + '<img src="' + imgUrl + '" alt="' + c.Title + '" loading="lazy" onload="this.classList.add(\'img-loaded\')" onerror="this.onerror=null; this.classList.add(\'img-loaded\'); this.src=\'' + DEFAULT_IMAGES.community + '\';"></div>' +
+          '<div class="p-3 p-lg-2.5 d-flex flex-column flex-grow-1 justify-content-between">' +
+            renderContentCategory(c) + '<h6 class="fw-bold card-title-single mb-3 mb-lg-2.5" title="' + c.Title + '">' + c.Title + '</h6>' +
+            '<div class="d-flex gap-2 gap-lg-1.5">' +
+              '<a href="' + c.WhatsappURL + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary-custom btn-sm flex-grow-1 text-center py-2 py-lg-1.5 px-2 card-btn-text"><i class="bi bi-people-fill me-1"></i>' + (c.ButtonText || 'Buka Komunitas') + '</a>' +
+              (isAdmin ? '<button class="btn btn-outline-secondary btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="openCommunityModal(\'' + c.ID + '\')"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="confirmDelete(\'deleteCommunity\', \'' + c.ID + '\')"><i class="bi bi-trash"></i></button>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div></div>';
+      }).join('') +
+    '</div>');
+  }
+
+  function openCommunityModal(id) {
+    var data = id ? STATE.dataStore.community[id] : null;
+    var isEdit = !!data;
+    var currStatus = data ? String(data.Status).toUpperCase() : 'PUBLIC';
+    if (currStatus === 'ACTIVE') currStatus = 'PUBLIC';
+    if (currStatus === 'INACTIVE') currStatus = 'PRIVATE';
+
+    document.getElementById('crudModalTitle').innerText = isEdit ? 'Edit Komunitas' : 'Tambah Komunitas';
+    document.getElementById('crudModalBody').innerHTML = '<form onsubmit="saveCommunity(event, \'' + (isEdit ? data.ID : '') + '\')">' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Nama Grup / Komunitas</label><input type="text" id="comTitle" class="form-control" value="' + (data ? data.Title : '') + '" placeholder="Masukkan nama komunitas" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Kategori (Opsional)</label><input type="text" id="comCategory" class="form-control" value="' + (data ? (data.Category || '') : '') + '" placeholder="Contoh: WhatsApp, Komunitas"></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Link Komunitas (URL)</label><input type="url" id="comUrl" class="form-control" value="' + (data ? data.WhatsappURL : '') + '" placeholder="Masukkan link komunitas" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Thumbnail Komunitas</label><div class="image-source-row"><div class="image-file-picker"><input type="file" id="comImgFile" class="whydev-file-input" accept="image/*" onchange="syncImageSource(\'comImgFile\',\'comImgUrl\',\'comImgFileName\',\'file\')"><button type="button" class="whydev-file-btn" onclick="openStyledFilePicker(\'comImgFile\')"><i class="bi bi-image me-2"></i>Pilih File</button><span id="comImgFileName" class="whydev-file-name">Belum ada file dipilih</span></div><input type="url" id="comImgUrl" class="form-control image-link-input" placeholder="Masukkan link gambar / Google Drive" oninput="syncImageSource(\'comImgFile\',\'comImgUrl\',\'comImgFileName\',\'link\')"></div><div class="form-text">Pilih salah satu: upload file atau gunakan link gambar.</div></div>' +
+      '<div class="row g-2 mb-4"><div class="col-6"><label class="form-label small fw-bold">Status Akses</label><select id="comStatus" class="form-select"><option value="PUBLIC" ' + (currStatus === 'PUBLIC' ? 'selected' : '') + '>Public</option><option value="PRIVATE" ' + (currStatus === 'PRIVATE' ? 'selected' : '') + '>Private</option></select></div><div class="col-6"><label class="form-label small fw-bold">Urutan</label><input type="number" id="comSort" class="form-control" value="' + (data ? data.SortOrder : 1) + '"></div></div>' +
+      '<div class="text-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary-custom">Simpan</button></div>' +
+    '</form>';
+    crudModalInstance.show();
+  }
+
+  async function saveCommunity(e, id) {
+    e.preventDefault();
+
+    var sendNotif = false;
+    if (!id && STATE.user && STATE.user.role === 'ADMIN' && !STATE.isPreviewMode) {
+      sendNotif = await askSendNotification();
+    }
+
+    var finalImg = await getImageSource('comImgFile','comImgUrl', id && STATE.dataStore.community[id] ? (STATE.dataStore.community[id].ImageURL || STATE.dataStore.community[id].Icon) : '', false);
+    showLoading(false);
+
+    var payload = {
+      title: document.getElementById('comTitle').value,
+      category: document.getElementById('comCategory').value.trim(),
+      whatsappURL: document.getElementById('comUrl').value,
+      imageURL: finalImg,
+      description: '',
+      status: document.getElementById('comStatus').value,
+      sortOrder: document.getElementById('comSort').value,
+      sendNotif: sendNotif
+    };
+    crudModalInstance.hide();
+    var fn = id ? runBackend('updateCommunity', STATE.token, id, payload) : runBackend('addCommunity', STATE.token, payload);
+    fn.then(function(res) {
+      hideLoading();
+      if (res.success) { showToast(res.message); preloadAllData(); loadViewContent('community'); }
+      else { showToast(res.message, 'error'); }
+    }).catch(function(err) {
+      hideLoading();
+      showToast('Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan'), 'error');
+    });
+  }
+
+  function renderWebsitesView(items) {
+    var isAdmin = STATE.user.role === 'ADMIN' && !STATE.isPreviewMode;
+    var topBar = '';
+
+    return topBar +
+    (items.length === 0 ? renderEmptyState() : '<div class="row g-2 g-md-3">' +
+      items.map(function(w) {
+        var imgUrl = getValidImage(w.ImageURL, DEFAULT_IMAGES.websites);
+        var isPrivate = ['PRIVATE','INACTIVE','NONAKTIF'].indexOf(String(w.Status || '').toUpperCase()) !== -1;
+        var privateBadge = (isAdmin && isPrivate) ? '<span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark shadow-sm z-3"><i class="bi bi-lock-fill me-1"></i>Private</span>' : '';
+
+        return '<div class="col-12 col-md-6 col-lg-3"><div class="card-custom h-100 d-flex flex-column position-relative">' +
+          '<div class="card-img-wrapper"><i class="bi bi-image lazy-image-icon" aria-hidden="true"></i>' + privateBadge + '<img src="' + imgUrl + '" alt="' + w.Title + '" loading="lazy" onload="this.classList.add(\'img-loaded\')" onerror="this.onerror=null; this.classList.add(\'img-loaded\'); this.src=\'' + DEFAULT_IMAGES.websites + '\';"></div>' +
+          '<div class="p-3 p-lg-2.5 d-flex flex-column flex-grow-1 justify-content-between">' +
+            renderContentCategory(w) + '<h6 class="fw-bold card-title-single mb-3 mb-lg-2.5" title="' + w.Title + '">' + w.Title + '</h6>' +
+            '<div class="d-flex gap-2 gap-lg-1.5">' +
+              '<a href="' + w.DemoURL + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary-custom btn-sm flex-grow-1 text-center py-2 py-lg-1.5 px-2 card-btn-text"><i class="bi bi-box-arrow-up-right me-1"></i>Lihat Website</a>' +
+              (isAdmin ? '<button class="btn btn-outline-secondary btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="openWebsiteModal(\'' + w.ID + '\')"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="confirmDelete(\'deleteWebsite\', \'' + w.ID + '\')"><i class="bi bi-trash"></i></button>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div></div>';
+      }).join('') +
+    '</div>');
+  }
+
+  function openWebsiteModal(id) {
+    var data = id ? STATE.dataStore.websites[id] : null;
+    var isEdit = !!data;
+    var currStatus = data ? String(data.Status).toUpperCase() : 'PUBLIC';
+    if (currStatus === 'ACTIVE') currStatus = 'PUBLIC';
+    if (currStatus === 'INACTIVE') currStatus = 'PRIVATE';
+
+    document.getElementById('crudModalTitle').innerText = isEdit ? 'Edit Website' : 'Tambah Website';
+    document.getElementById('crudModalBody').innerHTML = '<form onsubmit="saveWebsite(event, \'' + (isEdit ? data.ID : '') + '\')">' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Nama Website</label><input type="text" id="wTitle" class="form-control" value="' + (data ? data.Title : '') + '" placeholder="Masukkan nama website" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Kategori (Opsional)</label><input type="text" id="wCategory" class="form-control" value="' + (data ? (data.Category || '') : '') + '" placeholder="Contoh: Portfolio, Landing Page"></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Demo URL</label><input type="url" id="wDemo" class="form-control" value="' + (data ? data.DemoURL : '') + '" placeholder="Masukkan link website" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Thumbnail Website</label><div class="image-source-row"><div class="image-file-picker"><input type="file" id="wImgFile" class="whydev-file-input" accept="image/*" onchange="syncImageSource(\'wImgFile\',\'wImgUrl\',\'wImgFileName\',\'file\')"><button type="button" class="whydev-file-btn" onclick="openStyledFilePicker(\'wImgFile\')"><i class="bi bi-image me-2"></i>Pilih File</button><span id="wImgFileName" class="whydev-file-name">Belum ada file dipilih</span></div><input type="url" id="wImgUrl" class="form-control image-link-input" placeholder="Masukkan link gambar / Google Drive" oninput="syncImageSource(\'wImgFile\',\'wImgUrl\',\'wImgFileName\',\'link\')"></div><div class="form-text">Pilih salah satu: upload file atau gunakan link gambar.</div></div>' +
+      '<div class="row g-2 mb-4"><div class="col-6"><label class="form-label small fw-bold">Status Akses</label><select id="wStatus" class="form-select"><option value="PUBLIC" ' + (currStatus === 'PUBLIC' ? 'selected' : '') + '>Public</option><option value="PRIVATE" ' + (currStatus === 'PRIVATE' ? 'selected' : '') + '>Private</option></select></div><div class="col-6"><label class="form-label small fw-bold">Urutan</label><input type="number" id="wSort" class="form-control" value="' + (data ? data.SortOrder : 1) + '"></div></div>' +
+      '<div class="text-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary-custom">Simpan</button></div>' +
+    '</form>';
+    crudModalInstance.show();
+  }
+
+  async function saveWebsite(e, id) {
+    e.preventDefault();
+
+    var sendNotif = false;
+    if (!id && STATE.user && STATE.user.role === 'ADMIN' && !STATE.isPreviewMode) {
+      sendNotif = await askSendNotification();
+    }
+
+    var finalImg = await getImageSource('wImgFile','wImgUrl', id && STATE.dataStore.websites[id] ? STATE.dataStore.websites[id].ImageURL : '', false);
+    showLoading(false);
+
+    var payload = {
+      title: document.getElementById('wTitle').value,
+      category: document.getElementById('wCategory').value.trim(),
+      demoURL: document.getElementById('wDemo').value,
+      imageURL: finalImg,
+      description: '',
+      status: document.getElementById('wStatus').value,
+      sortOrder: document.getElementById('wSort').value,
+      sendNotif: sendNotif
+    };
+    crudModalInstance.hide();
+    var fn = id ? runBackend('updateWebsite', STATE.token, id, payload) : runBackend('addWebsite', STATE.token, payload);
+    fn.then(function(res) {
+      hideLoading();
+      if (res.success) { showToast(res.message); preloadAllData(); loadViewContent('websites'); }
+      else { showToast(res.message, 'error'); }
+    }).catch(function(err) {
+      hideLoading();
+      showToast('Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan'), 'error');
+    });
+  }
+
+  function renderAccessWebsView(items) {
+    var isAdmin = STATE.user.role === 'ADMIN' && !STATE.isPreviewMode;
+    var topBar = '';
+
+    return topBar +
+    (items.length === 0 ? renderEmptyState() : '<div class="row g-2 g-md-3">' +
+      items.map(function(w) {
+        var imgUrl = getValidImage(w.ImageURL, DEFAULT_IMAGES.accessWebs);
+        var isPrivate = ['PRIVATE','INACTIVE','NONAKTIF'].indexOf(String(w.Status || '').toUpperCase()) !== -1;
+        var privateBadge = (isAdmin && isPrivate) ? '<span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark shadow-sm z-3"><i class="bi bi-lock-fill me-1"></i>Private</span>' : '';
+
+        return '<div class="col-12 col-md-6 col-lg-3"><div class="card-custom h-100 d-flex flex-column position-relative">' +
+          '<div class="card-img-wrapper"><i class="bi bi-image lazy-image-icon" aria-hidden="true"></i>' + privateBadge + '<img src="' + imgUrl + '" alt="' + w.Title + '" loading="lazy" onload="this.classList.add(\'img-loaded\')" onerror="this.onerror=null; this.classList.add(\'img-loaded\'); this.src=\'' + DEFAULT_IMAGES.accessWebs + '\';"></div>' +
+          '<div class="p-3 p-lg-2.5 d-flex flex-column flex-grow-1 justify-content-between">' +
+            renderContentCategory(w) + '<h6 class="fw-bold card-title-single mb-3 mb-lg-2.5" title="' + w.Title + '">' + w.Title + '</h6>' +
+            '<div class="d-flex gap-2 gap-lg-1.5">' +
+              '<a href="' + w.DemoURL + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary-custom btn-sm flex-grow-1 text-center py-2 py-lg-1.5 px-2 card-btn-text"><i class="bi bi-box-arrow-up-right me-1"></i>Buka Akses Web</a>' +
+              (isAdmin ? '<button class="btn btn-outline-secondary btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="openAccessWebModal(\'' + w.ID + '\')"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="confirmDelete(\'deleteAccessWeb\', \'' + w.ID + '\')"><i class="bi bi-trash"></i></button>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div></div>';
+      }).join('') +
+    '</div>');
+  }
+
+  function openAccessWebModal(id) {
+    var data = id ? STATE.dataStore.accessWebs[id] : null;
+    var isEdit = !!data;
+    var currStatus = data ? String(data.Status).toUpperCase() : 'PUBLIC';
+    if (currStatus === 'ACTIVE') currStatus = 'PUBLIC';
+    if (currStatus === 'INACTIVE') currStatus = 'PRIVATE';
+
+    document.getElementById('crudModalTitle').innerText = isEdit ? 'Edit Hak Akses Web' : 'Tambah Hak Akses Web';
+    document.getElementById('crudModalBody').innerHTML = '<form onsubmit="saveAccessWeb(event, \'' + (isEdit ? data.ID : '') + '\')">' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Nama Akses Web</label><input type="text" id="awTitle" class="form-control" value="' + (data ? data.Title : '') + '" placeholder="Masukkan nama hak akses web" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Kategori (Opsional)</label><input type="text" id="awCategory" class="form-control" value="' + (data ? (data.Category || '') : '') + '" placeholder="Contoh: Premium, Aplikasi"></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Link Akses (URL)</label><input type="url" id="awDemo" class="form-control" value="' + (data ? data.DemoURL : '') + '" placeholder="Masukkan link hak akses web" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Thumbnail Hak Akses Web</label><div class="image-source-row"><div class="image-file-picker"><input type="file" id="awImgFile" class="whydev-file-input" accept="image/*" onchange="syncImageSource(\'awImgFile\',\'awImgUrl\',\'awImgFileName\',\'file\')"><button type="button" class="whydev-file-btn" onclick="openStyledFilePicker(\'awImgFile\')"><i class="bi bi-image me-2"></i>Pilih File</button><span id="awImgFileName" class="whydev-file-name">Belum ada file dipilih</span></div><input type="url" id="awImgUrl" class="form-control image-link-input" placeholder="Masukkan link gambar / Google Drive" oninput="syncImageSource(\'awImgFile\',\'awImgUrl\',\'awImgFileName\',\'link\')"></div><div class="form-text">Pilih salah satu: upload file atau gunakan link gambar.</div></div>' +
+      '<div class="row g-2 mb-4"><div class="col-6"><label class="form-label small fw-bold">Status Akses</label><select id="awStatus" class="form-select"><option value="PUBLIC" ' + (currStatus === 'PUBLIC' ? 'selected' : '') + '>Public</option><option value="PRIVATE" ' + (currStatus === 'PRIVATE' ? 'selected' : '') + '>Private</option></select></div><div class="col-6"><label class="form-label small fw-bold">Urutan</label><input type="number" id="awSort" class="form-control" value="' + (data ? data.SortOrder : 1) + '"></div></div>' +
+      '<div class="text-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary-custom">Simpan</button></div>' +
+    '</form>';
+    crudModalInstance.show();
+  }
+
+  async function saveAccessWeb(e, id) {
+    e.preventDefault();
+
+    var sendNotif = false;
+    if (!id && STATE.user && STATE.user.role === 'ADMIN' && !STATE.isPreviewMode) {
+      sendNotif = await askSendNotification();
+    }
+
+    var finalImg = await getImageSource('awImgFile','awImgUrl', id && STATE.dataStore.accessWebs[id] ? STATE.dataStore.accessWebs[id].ImageURL : '', false);
+    showLoading(false);
+
+    var payload = {
+      title: document.getElementById('awTitle').value,
+      category: document.getElementById('awCategory').value.trim(),
+      demoURL: document.getElementById('awDemo').value,
+      imageURL: finalImg,
+      description: '',
+      status: document.getElementById('awStatus').value,
+      sortOrder: document.getElementById('awSort').value,
+      sendNotif: sendNotif
+    };
+    crudModalInstance.hide();
+    var fn = id ? runBackend('updateAccessWeb', STATE.token, id, payload) : runBackend('addAccessWeb', STATE.token, payload);
+    fn.then(function(res) {
+      hideLoading();
+      if (res.success) { showToast(res.message); preloadAllData(); loadViewContent('accessWebs'); }
+      else { showToast(res.message, 'error'); }
+    }).catch(function(err) {
+      hideLoading();
+      showToast('Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan'), 'error');
+    });
+  }
+
+  function renderBonusesView(items) {
+    var isAdmin = STATE.user.role === 'ADMIN' && !STATE.isPreviewMode;
+    var topBar = '';
+
+    return topBar +
+    (items.length === 0 ? renderEmptyState() : '<div class="row g-2 g-md-3">' +
+      items.map(function(b) {
+        var imgUrl = getValidImage(b.ImageURL, DEFAULT_IMAGES.bonuses);
+        var isPrivate = ['PRIVATE','INACTIVE','NONAKTIF'].indexOf(String(b.Status || '').toUpperCase()) !== -1;
+        var privateBadge = (isAdmin && isPrivate) ? '<span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark shadow-sm z-3"><i class="bi bi-lock-fill me-1"></i>Private</span>' : '';
+
+        return '<div class="col-12 col-md-6 col-lg-3"><div class="card-custom h-100 d-flex flex-column position-relative">' +
+          '<div class="card-img-wrapper"><i class="bi bi-image lazy-image-icon" aria-hidden="true"></i>' + privateBadge + '<img src="' + imgUrl + '" alt="' + b.Title + '" loading="lazy" onload="this.classList.add(\'img-loaded\')" onerror="this.onerror=null; this.classList.add(\'img-loaded\'); this.src=\'' + DEFAULT_IMAGES.bonuses + '\';"></div>' +
+          '<div class="p-3 p-lg-2.5 d-flex flex-column flex-grow-1 justify-content-between">' +
+            renderContentCategory(b) + '<h6 class="fw-bold card-title-single mb-3 mb-lg-2.5" title="' + b.Title + '">' + b.Title + '</h6>' +
+            '<div class="d-flex gap-2 gap-lg-1.5">' +
+              '<a href="' + b.ProductURL + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary-custom btn-sm flex-grow-1 text-center py-2 py-lg-1.5 px-2 card-btn-text"><i class="bi bi-box-arrow-up-right me-1"></i>Buka Bonus</a>' +
+              (isAdmin ? '<button class="btn btn-outline-secondary btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="openBonusModal(\'' + b.ID + '\')"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger btn-sm px-2.5 px-lg-2 py-2 py-lg-1.5" onclick="confirmDelete(\'deleteBonus\', \'' + b.ID + '\')"><i class="bi bi-trash"></i></button>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div></div>';
+      }).join('') +
+    '</div>');
+  }
+
+  function openBonusModal(id) {
+    var data = id ? STATE.dataStore.bonuses[id] : null;
+    var isEdit = !!data;
+    var currStatus = data ? String(data.Status).toUpperCase() : 'PUBLIC';
+    if (currStatus === 'ACTIVE') currStatus = 'PUBLIC';
+    if (currStatus === 'INACTIVE') currStatus = 'PRIVATE';
+
+    document.getElementById('crudModalTitle').innerText = isEdit ? 'Edit Bonus Gratis' : 'Tambah Bonus Gratis';
+    document.getElementById('crudModalBody').innerHTML = '<form onsubmit="saveBonus(event, \'' + (isEdit ? data.ID : '') + '\')">' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Nama Bonus</label><input type="text" id="bTitle" class="form-control" value="' + (data ? data.Title : '') + '" placeholder="Masukkan nama bonus" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Kategori (Opsional)</label><input type="text" id="bCategory" class="form-control" value="' + (data ? (data.Category || '') : '') + '" placeholder="Contoh: Template, Prompt, Digital"></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Product / Download URL</label><input type="url" id="bUrl" class="form-control" value="' + (data ? data.ProductURL : '') + '" placeholder="Masukkan link bonus" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Thumbnail Bonus</label><div class="image-source-row"><div class="image-file-picker"><input type="file" id="bImgFile" class="whydev-file-input" accept="image/*" onchange="syncImageSource(\'bImgFile\',\'bImgUrl\',\'bImgFileName\',\'file\')"><button type="button" class="whydev-file-btn" onclick="openStyledFilePicker(\'bImgFile\')"><i class="bi bi-image me-2"></i>Pilih File</button><span id="bImgFileName" class="whydev-file-name">Belum ada file dipilih</span></div><input type="url" id="bImgUrl" class="form-control image-link-input" placeholder="Masukkan link gambar / Google Drive" oninput="syncImageSource(\'bImgFile\',\'bImgUrl\',\'bImgFileName\',\'link\')"></div><div class="form-text">Pilih salah satu: upload file atau gunakan link gambar.</div></div>' +
+      '<div class="row g-2 mb-4"><div class="col-6"><label class="form-label small fw-bold">Status Akses</label><select id="bStatus" class="form-select"><option value="PUBLIC" ' + (currStatus === 'PUBLIC' ? 'selected' : '') + '>Public</option><option value="PRIVATE" ' + (currStatus === 'PRIVATE' ? 'selected' : '') + '>Private</option></select></div><div class="col-6"><label class="form-label small fw-bold">Urutan</label><input type="number" id="bSort" class="form-control" value="' + (data ? data.SortOrder : 1) + '"></div></div>' +
+      '<div class="text-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary-custom">Simpan</button></div>' +
+    '</form>';
+    crudModalInstance.show();
+  }
+
+  async function saveBonus(e, id) {
+    e.preventDefault();
+
+    var sendNotif = false;
+    if (!id && STATE.user && STATE.user.role === 'ADMIN' && !STATE.isPreviewMode) {
+      sendNotif = await askSendNotification();
+    }
+
+    var finalImg = await getImageSource('bImgFile','bImgUrl', id && STATE.dataStore.bonuses[id] ? STATE.dataStore.bonuses[id].ImageURL : '', false);
+    showLoading(false);
+
+    var payload = {
+      title: document.getElementById('bTitle').value,
+      category: document.getElementById('bCategory').value.trim(),
+      productURL: document.getElementById('bUrl').value,
+      imageURL: finalImg,
+      description: '',
+      status: document.getElementById('bStatus').value,
+      sortOrder: document.getElementById('bSort').value,
+      sendNotif: sendNotif
+    };
+    crudModalInstance.hide();
+    var fn = id ? runBackend('updateBonus', STATE.token, id, payload) : runBackend('addBonus', STATE.token, payload);
+    fn.then(function(res) {
+      hideLoading();
+      if (res.success) { showToast(res.message); preloadAllData(); loadViewContent('bonuses'); }
+      else { showToast(res.message, 'error'); }
+    }).catch(function(err) {
+      hideLoading();
+      showToast('Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan'), 'error');
+    });
+  }
+
+  function renderMembersView(members) {
+    var sortedMembers = (members || []).slice().sort(function(a, b) {
+      var typeA = a.memberType || 'Member Lifetime';
+      var typeB = b.memberType || 'Member Lifetime';
+
+      if (typeA === 'Member Lifetime' && typeB === 'Member Trial') return -1;
+      if (typeA === 'Member Trial' && typeB === 'Member Lifetime') return 1;
+
+      if (a.isOnline && !b.isOnline) return -1;
+      if (!a.isOnline && b.isOnline) return 1;
+
+      if (a.role === 'ADMIN' && b.role !== 'ADMIN') return -1;
+      if (a.role !== 'ADMIN' && b.role === 'ADMIN') return 1;
+
+      return 0;
+    });
+
+    return '<div class="card-custom p-3 p-md-4 mb-4 members-management-card">' +
+      '<div class="row g-2 mb-3">' +
+        '<div class="col-12 col-md-6"><input type="text" id="memberSearch" class="form-control" placeholder="Cari email..." onkeyup="filterMembersTable()"></div>' +
+        '<div class="col-6 col-md-3"><select id="memberRoleFilter" class="form-select" onchange="filterMembersTable()"><option value="">Semua Role</option><option value="ADMIN">Admin</option><option value="MEMBER">Member</option></select></div>' +
+        '<div class="col-6 col-md-3"><select id="memberStatusFilter" class="form-select" onchange="filterMembersTable()"><option value="">Semua Status</option><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select></div>' +
+      '</div>' +
+      '<div class="table-responsive members-table-wrap"><table class="table table-hover align-middle mb-0" id="membersTable"><thead class="table-light"><tr><th>No</th><th>Email</th><th>Akses</th><th>Role</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
+      sortedMembers.map(function(m, idx) {
+        var roleBadge = m.role === 'ADMIN' 
+          ? '<span class="badge bg-secondary-subtle text-dark px-2.5 py-1">Admin</span>' 
+          : '<span class="badge bg-secondary-subtle text-dark px-2.5 py-1">Member</span>';
+
+        var onlineDot = m.isOnline ? '<span class="member-online-dot" title="Online"></span>' : '';
+
+        var mType = m.memberType || 'Member Lifetime';
+        var showDate = (m.status === 'ACTIVE' && m.expiredAt) 
+          ? '<div class="small text-muted" style="font-size:0.68rem;">s/d ' + m.expiredAt.split(' ')[0] + '</div>' 
+          : '';
+
+        var typeBadge = (mType === 'Member Trial') 
+          ? '<span class="badge bg-secondary-subtle text-dark px-2 py-1">Trial</span>' + showDate
+          : '<span class="badge bg-secondary-subtle text-dark px-2 py-1">Lifetime</span>';
+
+        return '<tr data-role="' + String(m.role || '').toUpperCase() + '" data-status="' + String(m.status || '').toUpperCase() + '"><td>' + (idx + 1) + '</td><td class="fw-semibold member-email-cell"><span class="member-email-line">' + onlineDot + '<span>' + m.email + '</span></span></td><td>' + typeBadge + '</td><td>' + roleBadge + '</td><td><span class="badge bg-secondary-subtle text-dark" style="font-size:0.68rem;">' + formatFrontendLabel(m.status) + '</span></td><td>' +
+          '<div class="btn-group btn-group-sm">' +
+            '<button class="btn btn-outline-secondary" title="Edit Member" onclick="openEditMemberModal(\'' + m.id + '\')"><i class="bi bi-pencil"></i></button>' +
+            '<button class="btn btn-outline-warning" title="Reset Password" onclick="openResetPasswordModal(\'' + m.id + '\', \'' + m.nama + '\')"><i class="bi bi-key"></i></button>' +
+            '<button class="btn btn-outline-info" title="Toggle Status" onclick="handleToggleStatus(\'' + m.id + '\')"><i class="bi bi-power"></i></button>' +
+            '<button class="btn btn-outline-danger" title="Hapus" onclick="confirmDelete(\'deleteMember\', \'' + m.id + '\')"><i class="bi bi-trash"></i></button>' +
+          '</div></td></tr>';
+      }).join('') +
+      '</tbody></table></div>' +
+    '</div>';
+  }
+
+  function openAddMemberModal() {
+    document.getElementById('crudModalTitle').innerText = 'Tambah Member';
+    document.getElementById('crudModalBody').innerHTML = '<form onsubmit="saveUnifiedMember(event)">' +
+      '<div class="mb-3">' +
+        '<label class="form-label small fw-bold">Email Member</label>' +
+        '<textarea id="mEmails" class="form-control" rows="2" placeholder="Contoh: member@gmail.com (atau pisahkan beberapa email dengan Enter)" required></textarea>' +
+      '</div>' +
+      '<div class="mb-3">' +
+        '<label class="form-label small fw-bold">Nama Lengkap (Opsional)</label>' +
+        '<input type="text" id="mNama" class="form-control" placeholder="Default: Member Why Dev">' +
+      '</div>' +
+      '<div class="row g-2 mb-3">' +
+        '<div class="col-6"><label class="form-label small fw-bold">Tipe Keanggotaan</label><select id="mMemberType" class="form-select" onchange="toggleTrialDaysInput(this.value)"><option value="Member Lifetime">Member Lifetime</option><option value="Member Trial">Member Trial</option></select></div>' +
+        '<div class="col-6" id="trialDaysWrapper" style="display:none;"><label class="form-label small fw-bold">Durasi Trial (Hari)</label><input type="number" id="mTrialDays" class="form-control" value="1" min="1" placeholder="Min 1 hari"></div>' +
+      '</div>' +
+      '<div class="row g-2 mb-3"><div class="col-6"><label class="form-label small fw-bold">Role</label><select id="mRole" class="form-select" onchange="handleRoleChangeModal(this.value)"><option value="MEMBER">Member</option><option value="ADMIN">Admin</option></select></div><div class="col-6"><label class="form-label small fw-bold">Status</label><select id="mStatus" class="form-select"><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select></div></div>' +
+      '<div class="mb-4">' +
+        '<label class="form-label small fw-bold">Password (Opsional)</label>' +
+        '<input type="text" id="mPass" class="form-control" placeholder="Default: member123" value="member123">' +
+      '</div>' +
+      '<div class="text-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary-custom">Simpan Member</button></div>' +
+    '</form>';
+    crudModalInstance.show();
+  }
+
+  function toggleTrialDaysInput(type) {
+    var wrapper = document.getElementById('trialDaysWrapper');
+    if (wrapper) wrapper.style.display = (type === 'Member Trial') ? 'block' : 'none';
+  }
+
+  function handleRoleChangeModal(role) {
+    var passInput = document.getElementById('mPass');
+    if (passInput) {
+      passInput.value = role === 'ADMIN' ? 'admin123' : 'member123';
+      passInput.placeholder = role === 'ADMIN' ? 'Default: admin123' : 'Default: member123';
+    }
+  }
+
+  function saveUnifiedMember(e) {
+    e.preventDefault();
+    var rawEmails = document.getElementById('mEmails').value.trim();
+    var inputNama = document.getElementById('mNama').value.trim() || 'Member Why Dev';
+    var role = document.getElementById('mRole').value;
+    var defaultPass = (role === 'ADMIN') ? 'admin123' : 'member123';
+    var inputPass = document.getElementById('mPass').value.trim() || defaultPass;
+    var status = document.getElementById('mStatus').value;
+    var memberType = document.getElementById('mMemberType').value;
+    var trialDays = document.getElementById('mTrialDays') ? document.getElementById('mTrialDays').value : 1;
+
+    var emailList = rawEmails.split('\n').map(function(item) { return item.trim(); }).filter(function(item) { return item.length > 0; });
+
+    if (emailList.length === 0) {
+      showToast('Masukkan minimal satu email', 'error');
+      return;
+    }
+
+    crudModalInstance.hide();
+    showLoading(false);
+
+    var payload = {
+      nama: inputNama,
+      username: emailList[0],
+      email: emailList[0],
+      password: inputPass,
+      role: role,
+      status: status,
+      memberType: memberType,
+      trialDays: trialDays
+    };
+
+    runBackend('addMember', STATE.token, payload).then(function(res) {
+      hideLoading();
+      if (res.success) { 
+        showToast(res.message); 
+        STATE.dataStore.members = {}; 
+        loadViewContent('members'); 
+      }
+      else { showToast(res.message, 'error'); }
+    });
+  }
+
+  function openEditMemberModal(id) {
+    var m = STATE.dataStore.members[id];
+    if (!m) return;
+    var mType = m.memberType || 'Member Lifetime';
+
+    document.getElementById('crudModalTitle').innerText = 'Edit Member';
+    document.getElementById('crudModalBody').innerHTML = '<form onsubmit="saveEditMember(event, \'' + m.id + '\')">' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Nama Lengkap</label><input type="text" id="mEditNama" class="form-control" value="' + (m.nama || '') + '" required></div>' +
+      '<div class="mb-3"><label class="form-label small fw-bold">Email</label><input type="email" id="mEditEmail" class="form-control" value="' + (m.email || '') + '" required></div>' +
+      '<div class="mb-3">' +
+        '<label class="form-label small fw-bold">Password</label>' +
+        '<div class="password-input-wrapper">' +
+          '<input type="text" id="mEditPass" class="form-control" value="' + (m.password || '') + '" required style="padding-right: 48px;">' +
+          '<button type="button" class="password-toggle-inside" onclick="togglePasswordVisibility(\'mEditPass\', this)"><i class="bi bi-eye-slash"></i></button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="row g-2 mb-3">' +
+        '<div class="col-6"><label class="form-label small fw-bold">Tipe Keanggotaan</label><select id="mEditMemberType" class="form-select" onchange="toggleEditTrialDaysInput(this.value)"><option value="Member Lifetime" ' + (mType === 'Member Lifetime' ? 'selected' : '') + '>Member Lifetime</option><option value="Member Trial" ' + (mType === 'Member Trial' ? 'selected' : '') + '>Member Trial</option></select></div>' +
+        '<div class="col-6" id="editTrialDaysWrapper" style="' + (mType === 'Member Trial' ? '' : 'display:none;') + '"><label class="form-label small fw-bold">Tambah Durasi Trial (Hari)</label><input type="number" id="mEditTrialDays" class="form-control" placeholder="Kosongkan jika tidak diubah" min="1"></div>' +
+      '</div>' +
+      '<div class="row g-2 mb-4"><div class="col-6"><label class="form-label small fw-bold">Role</label><select id="mEditRole" class="form-select"><option value="MEMBER" ' + (m.role === 'MEMBER' ? 'selected' : '') + '>Member</option><option value="ADMIN" ' + (m.role === 'ADMIN' ? 'selected' : '') + '>Admin</option></select></div><div class="col-6"><label class="form-label small fw-bold">Status</label><select id="mEditStatus" class="form-select"><option value="ACTIVE" ' + (m.status === 'ACTIVE' ? 'selected' : '') + '>Active</option><option value="INACTIVE" ' + (m.status === 'INACTIVE' ? 'selected' : '') + '>Inactive</option></select></div></div>' +
+      '<div class="text-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary-custom">Simpan</button></div>' +
+    '</form>';
+    crudModalInstance.show();
+  }
+
+  function toggleEditTrialDaysInput(type) {
+    var wrapper = document.getElementById('editTrialDaysWrapper');
+    if (wrapper) wrapper.style.display = (type === 'Member Trial') ? 'block' : 'none';
+  }
+
+  function saveEditMember(e, id) {
+    e.preventDefault();
+    var payload = {
+      nama: document.getElementById('mEditNama').value,
+      email: document.getElementById('mEditEmail').value,
+      password: document.getElementById('mEditPass').value,
+      role: document.getElementById('mEditRole').value,
+      status: document.getElementById('mEditStatus').value,
+      memberType: document.getElementById('mEditMemberType').value,
+      trialDays: document.getElementById('mEditTrialDays') ? document.getElementById('mEditTrialDays').value : ''
+    };
+    crudModalInstance.hide();
+    showLoading(false);
+    runBackend('updateMember', STATE.token, id, payload).then(function(res) {
+      hideLoading();
+      if (res.success) { 
+        showToast(res.message); 
+        STATE.dataStore.members = {}; 
+        loadViewContent('members'); 
+      }
+      else { showToast(res.message, 'error'); }
+    });
+  }
+
+  function openResetPasswordModal(id, nama) {
+    document.getElementById('crudModalTitle').innerText = 'Reset Password — ' + nama;
+    document.getElementById('crudModalBody').innerHTML = '<form onsubmit="saveResetPassword(event, \'' + id + '\')">' +
+      '<div class="mb-4"><label class="form-label small fw-bold">Password Baru (Tanpa Hash)</label><input type="text" id="mNewPass" class="form-control" placeholder="Masukkan password baru" required></div>' +
+      '<div class="text-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary-custom">Reset Password</button></div>' +
+    '</form>';
+    crudModalInstance.show();
+  }
+
+  function saveResetPassword(e, id) {
+    e.preventDefault();
+    var p = document.getElementById('mNewPass').value;
+    crudModalInstance.hide();
+    showLoading(false);
+    runBackend('resetMemberPassword', STATE.token, id, p).then(function(res) {
+      hideLoading();
+      if (res.success) showToast(res.message);
+      else showToast(res.message, 'error');
+    });
+  }
+
+  function handleToggleStatus(id) {
+    showLoading(false);
+    runBackend('toggleMemberStatus', STATE.token, id).then(function(res) {
+      hideLoading();
+      if (res.success) { 
+        showToast(res.message); 
+        STATE.dataStore.members = {}; 
+        loadViewContent('members'); 
+      }
+      else { showToast(res.message, 'error'); }
+    });
+  }
+
+  function filterMembersTable() {
+    var searchEl = document.getElementById('memberSearch');
+    var roleEl = document.getElementById('memberRoleFilter');
+    var statusEl = document.getElementById('memberStatusFilter');
+    var q = searchEl ? searchEl.value.trim().toLocaleLowerCase() : '';
+    var role = roleEl ? String(roleEl.value || '').trim().toUpperCase() : '';
+    var status = statusEl ? String(statusEl.value || '').trim().toUpperCase() : '';
+    var rows = document.querySelectorAll('#membersTable tbody tr');
+
+    rows.forEach(function(r) {
+      var text = (r.innerText || '').toLocaleLowerCase();
+      var rRole = String(r.getAttribute('data-role') || '').trim().toUpperCase();
+      var rStatus = String(r.getAttribute('data-status') || '').trim().toUpperCase();
+
+      var matchText = !q || text.indexOf(q) !== -1;
+      var matchRole = !role || rRole === role;
+      var matchStatus = !status || rStatus === status;
+
+      r.style.display = (matchText && matchRole && matchStatus) ? '' : 'none';
+    });
+  }
+
+  function renderProfileView() {
+    var u = STATE.user || {};
+    return '<div class="row g-3 g-md-4">' +
+      '<div class="col-12 col-lg-6"><div class="card-custom p-3 p-md-4 profile-page-card"><h5 class="fw-bold mb-3 fs-6 fs-md-5"><i class="bi bi-person-gear me-2"></i>Edit Profil Saya</h5><form onsubmit="handleUpdateProfile(event)"><div class="mb-3"><label class="form-label small fw-bold">Nama Lengkap</label><input type="text" id="profNama" class="form-control" value="' + (u.nama || '') + '" required></div><div class="mb-3"><label class="form-label small fw-bold">Email (Tidak dapat diubah)</label><input type="email" id="profEmail" class="form-control" value="' + (u.email || '') + '" disabled></div><div class="mb-4"><label class="form-label small fw-bold">Role</label><input type="text" class="form-control" value="' + formatFrontendLabel(u.role || '') + '" disabled></div><button type="submit" class="btn btn-primary-custom w-100 w-md-auto py-2">Simpan Perubahan</button></form></div></div>' +
+      '<div class="col-12 col-lg-6"><div class="card-custom p-3 p-md-4 profile-page-card"><h5 class="fw-bold mb-3 fs-6 fs-md-5"><i class="bi bi-shield-lock me-2"></i>Ubah Password</h5><form onsubmit="handleChangePassword(event)"><div class="mb-3"><label class="form-label small fw-bold">Password Lama</label><input type="password" id="passOld" class="form-control" required></div><div class="mb-3"><label class="form-label small fw-bold">Password Baru</label><input type="password" id="passNew" class="form-control" required></div><div class="mb-4"><label class="form-label small fw-bold">Konfirmasi Password Baru</label><input type="password" id="passConf" class="form-control" required></div><button type="submit" class="btn btn-primary-custom w-100 w-md-auto py-2">Ubah Password</button></form></div></div>' +
+    '</div>';
+  }
+
+  function handleUpdateProfile(e) {
+    e.preventDefault();
+    var payload = {
+      nama: document.getElementById('profNama').value
+    };
+    showLoading(false);
+    runBackend('updateProfile', STATE.token, payload).then(function(res) {
+      hideLoading();
+      if (res.success) {
+        STATE.user = res.user;
+        showToast(res.message);
+        renderView('profile');
+      } else { showToast(res.message, 'error'); }
+    });
+  }
+
+  function handleChangePassword(e) {
+    e.preventDefault();
+    var o = document.getElementById('passOld').value;
+    var n = document.getElementById('passNew').value;
+    var c = document.getElementById('passConf').value;
+
+    if (n !== c) {
+      showToast('Password baru dan konfirmasi tidak sama.', 'error');
+      return;
+    }
+
+    showLoading(false);
+    runBackend('changePassword', STATE.token, o, n).then(function(res) {
+      hideLoading();
+      if (res.success) {
+        showToast(res.message);
+        document.getElementById('passOld').value = '';
+        document.getElementById('passNew').value = '';
+        document.getElementById('passConf').value = '';
+      } else { showToast(res.message, 'error'); }
+    });
+  }
+
+  function renderSettingsView(s) {
+    s = s || STATE.settings;
+    var defaultTheme = s.default_theme || 'light';
+
+    return '<div class="row g-3 g-md-4">' +
+      '<div class="col-12 col-lg-8 mx-auto">' +
+        '<div class="card-custom p-3 p-md-4 settings-general-card">' +
+          '<div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3"><h5 class="fw-bold mb-0 fs-6 fs-md-5"><i class="bi bi-sliders me-2"></i>Pengaturan Website Umum</h5>' +
+          ((STATE.user && STATE.user.role === 'ADMIN') ? '<button type="button" class="btn btn-sm ' + (STATE.isPreviewMode ? 'btn-warning' : 'btn-outline-primary') + ' fw-semibold text-nowrap" onclick="togglePreviewMode()"><i class="bi ' + (STATE.isPreviewMode ? 'bi-eye-slash-fill' : 'bi-eye-fill') + ' me-1"></i>' + (STATE.isPreviewMode ? 'Keluar Pratinjau' : 'Tampilan Member') + '</button>' : '') +
+          '</div>' +
+          '<form onsubmit="handleSaveSettings(event)">' +
+            '<div class="mb-3"><label class="form-label small fw-bold">Nama Website</label><input type="text" id="sSiteName" class="form-control" value="' + (s.site_name || 'WHY DEV') + '" required></div>' +
+            '<div class="mb-3"><label class="form-label small fw-bold">Logo Website</label><div class="image-source-row"><div class="image-file-picker"><input type="file" id="sLogoFile" class="whydev-file-input" accept="image/*" onchange="syncImageSource(\'sLogoFile\',\'sLogoUrl\',\'sLogoFileName\',\'file\')"><button type="button" class="whydev-file-btn" onclick="openStyledFilePicker(\'sLogoFile\')"><i class="bi bi-image me-2"></i>Pilih File</button><span id="sLogoFileName" class="whydev-file-name">Belum ada file dipilih</span></div><input type="url" id="sLogoUrl" class="form-control image-link-input" placeholder="Masukkan link logo / Google Drive" oninput="syncImageSource(\'sLogoFile\',\'sLogoUrl\',\'sLogoFileName\',\'link\')"></div><div class="form-text">Pilih file atau gunakan link logo.</div></div>' +
+            '<div class="mb-3"><label class="form-label small fw-bold">Tema Default</label><select id="sDefaultTheme" class="form-select"><option value="light" ' + (defaultTheme === 'light' ? 'selected' : '') + '>Light (Terang)</option><option value="dark" ' + (defaultTheme === 'dark' ? 'selected' : '') + '>Dark (Gelap)</option></select></div>' +
+            '<div class="mb-4"><label class="form-label small fw-bold">Teks Footer Aplikasi</label><input type="text" id="sFooter" class="form-control" value="' + (s.footer_text || '') + '" required></div>' +
+            '<button type="submit" class="btn btn-primary-custom w-100 py-2">Simpan Pengaturan Umum</button>' +
+          '</form>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  async function handleSaveSettings(e) {
+    e.preventDefault();
+    var logoUrl = await getImageSource('sLogoFile','sLogoUrl', STATE.settings.logo_url || '', false);
+    var selectedTheme = document.getElementById('sDefaultTheme').value;
+    showLoading(false);
+
+    var payload = {
+      site_name: document.getElementById('sSiteName').value,
+      footer_text: document.getElementById('sFooter').value,
+      default_theme: selectedTheme,
+      logo_url: logoUrl
+    };
+
+    runBackend('updateSettings', STATE.token, payload).then(function(res) {
+      hideLoading();
+      if (res.success) {
+        applyTheme(selectedTheme);
+        showToast(res.message);
+        STATE.settingsCache = null;
+        loadSettings(function() { renderView('settings'); });
+      } else { 
+        showToast(res.message, 'error'); 
+      }
+    }).catch(function(err) { 
+      hideLoading(); 
+      showToast(err.message, 'error'); 
+    });
+  }
+
+  function renderEmptyState() {
+    return '<div class="card-custom p-4 p-md-5 text-center my-3 my-md-4">' +
+      '<i class="bi bi-inbox fs-1 text-muted mb-2"></i>' +
+      '<h5 class="fw-bold fs-6 fs-md-5">Belum Ada Data</h5>' +
+      '<p class="text-muted small mb-0">Data akan muncul setelah admin menambahkannya.</p>' +
+    '</div>';
+  }
+
+  function confirmDelete(backendFn, id) {
+    var old = document.getElementById('whydevConfirmOverlay');
+    if (old) old.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'whydevConfirmOverlay';
+    overlay.className = 'whydev-confirm-overlay';
+    overlay.innerHTML = '<div class="whydev-confirm-card whydev-delete-confirm-card" role="dialog" aria-modal="true" aria-labelledby="whyDeleteTitle">' +
+      '<div class="whydev-confirm-icon" style="background:rgba(239,68,68,.11);color:#EF4444;"><i class="bi bi-trash3-fill"></i></div>' +
+      '<h5 id="whyDeleteTitle" class="fw-bold mb-2">Konfirmasi Hapus</h5>' +
+      '<p class="text-muted small mb-4">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</p>' +
+      '<div class="d-flex gap-2 justify-content-center"><button type="button" class="btn btn-outline-secondary px-4" data-choice="no">Batal</button><button type="button" class="btn btn-danger px-4 fw-bold" data-choice="yes"><i class="bi bi-trash3 me-1"></i>Hapus</button></div>' +
+      '</div>';
+
+    function finish(value) {
+      document.removeEventListener('keydown', onEscape);
+      overlay.remove();
+      if (value) executeDelete(backendFn, id);
+    }
+    function onEscape(ev) {
+      if (ev.key === 'Escape' && document.getElementById('whydevConfirmOverlay')) finish(false);
+    }
+    overlay.addEventListener('click', function(ev) {
+      if (ev.target === overlay) finish(false);
+      var choice = ev.target.closest('[data-choice]');
+      if (choice) finish(choice.getAttribute('data-choice') === 'yes');
+    });
+    document.addEventListener('keydown', onEscape);
+    document.body.appendChild(overlay);
+  }
+
+  function executeDelete(backendFn, id) {
+    crudModalInstance.hide();
+    showLoading(false);
+    runBackend(backendFn, STATE.token, id).then(function(res) {
+      hideLoading();
+      if (res.success) {
+        showToast(res.message);
+        if (backendFn === 'deleteMember') STATE.dataStore.members = {};
+        preloadAllData();
+        loadViewContent(STATE.currentView);
+      } else { showToast(res.message, 'error'); }
+    });
+  }
+
+
+  var WHYDEV_SALES_URL = 'https://lynk.id/whydevportal/k31j4p484lgj';
+
+  function showDemoJoinAlert() {
+    var old = document.getElementById('whydevDemoJoinOverlay');
+    if (old) old.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'whydevDemoJoinOverlay';
+    overlay.className = 'whydev-confirm-overlay';
+    overlay.innerHTML = '<div class="whydev-confirm-card whydev-demo-join-card" role="dialog" aria-modal="true" aria-labelledby="whyDemoJoinTitle">' +
+      '<div class="whydev-confirm-icon"><i class="bi bi-lock-fill"></i></div>' +
+      '<h5 id="whyDemoJoinTitle" class="fw-bold mb-2">Yuk, Jadi Member Why Dev!</h5>' +
+      '<p class="text-muted small mb-3">Kamu sedang berada di mode demo. Gabung menjadi member Why Dev untuk membuka akses penuh ke seluruh konten, tools, dan fitur eksklusif yang tersedia.</p>' +
+      '<div class="d-flex flex-column gap-2">' +
+        '<button type="button" class="btn btn-primary-custom fw-bold" data-demo-join="yes"><i class="bi bi-unlock-fill me-1"></i>Gabung Member Sekarang</button>' +
+        '<button type="button" class="btn btn-outline-secondary" data-demo-join="no">Nanti Saja</button>' +
+      '</div>' +
+    '</div>';
+
+    function closeAlert() {
+      document.removeEventListener('keydown', onKeyDown);
+      if (overlay.parentNode) overlay.remove();
+    }
+    function onKeyDown(ev) {
+      if (ev.key === 'Escape') closeAlert();
+    }
+    overlay.addEventListener('click', function(ev) {
+      if (ev.target === overlay) {
+        closeAlert();
+        return;
+      }
+      var choice = ev.target.closest('[data-demo-join]');
+      if (!choice) return;
+      if (choice.getAttribute('data-demo-join') === 'yes') {
+        closeAlert();
+        window.open(WHYDEV_SALES_URL, '_blank', 'noopener,noreferrer');
+      } else {
+        closeAlert();
+      }
+    });
+    document.addEventListener('keydown', onKeyDown);
+    document.body.appendChild(overlay);
+  }
+
+  // Akun demo tetap boleh menjelajahi menu, tetapi semua aksi pada kartu konten dikunci.
+  document.addEventListener('click', function(ev) {
+    if (!STATE.user || String(STATE.user.role || '').toUpperCase() !== 'DEMO') return;
+    var contentViews = ['courses', 'tools', 'websites', 'accessWebs', 'bonuses', 'community', 'karyaMembers'];
+    if (contentViews.indexOf(String(STATE.currentView || '')) === -1) return;
+    var action = ev.target && ev.target.closest ? ev.target.closest('#mainContent a, #mainContent button, #mainContent [onclick]') : null;
+    if (!action) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+    showDemoJoinAlert();
+  }, true);
+
+</script>
